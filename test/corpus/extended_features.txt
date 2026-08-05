@@ -1,0 +1,857 @@
+==================
+Event literal with bare key (no space)
+==================
+(freq:440, amp:0.1);
+
+---
+
+(source_file
+  (event
+    pairs: (associative_item
+      key: (event_key)
+      value: (item
+        (literal
+          (number
+            (integer)))))
+    pairs: (associative_item
+      key: (event_key)
+      value: (item
+        (literal
+          (number
+            (float)))))))
+
+==================
+Event literal with space before colon
+==================
+(freq :440, amp :0.1);
+
+---
+
+(source_file
+  (event
+    pairs: (associative_item
+      key: (event_key)
+      value: (item
+        (literal
+          (number
+            (integer)))))
+    pairs: (associative_item
+      key: (event_key)
+      value: (item
+        (literal
+          (number
+            (float)))))))
+
+==================
+Event literal with space after colon
+==================
+(freq: 440, amp: 0.1);
+
+---
+
+(source_file
+  (event
+    pairs: (associative_item
+      key: (event_key)
+      value: (item
+        (literal
+          (number
+            (integer)))))
+    pairs: (associative_item
+      key: (event_key)
+      value: (item
+        (literal
+          (number
+            (float)))))))
+
+==================
+Event literal with spaces around colon
+==================
+(freq : 440, amp : 0.1);
+
+---
+
+(source_file
+  (event
+    pairs: (associative_item
+      key: (event_key)
+      value: (item
+        (literal
+          (number
+            (integer)))))
+    pairs: (associative_item
+      key: (event_key)
+      value: (item
+        (literal
+          (number
+            (float)))))))
+
+==================
+Nested event literal
+==================
+(env: (attack: 0.01, release: 1.0));
+
+---
+
+(source_file
+  (event
+    pairs: (associative_item
+      key: (event_key)
+      value: (item
+        (event
+          pairs: (associative_item
+            key: (event_key)
+            value: (item
+              (literal
+                (number
+                  (float)))))
+          pairs: (associative_item
+            key: (event_key)
+            value: (item
+              (literal
+                (number
+                  (float))))))))))
+
+==================
+Event with symbol value
+==================
+(instrument: \default, freq: 440);
+
+---
+
+(source_file
+  (event
+    pairs: (associative_item
+      key: (event_key)
+      value: (item
+        (literal
+          (symbol
+            (identifier)))))
+    pairs: (associative_item
+      key: (event_key)
+      value: (item
+        (literal
+          (number
+            (integer)))))))
+
+==================
+Event literal play
+==================
+(freq: 440, amp: 0.1).play;
+
+---
+
+(source_file
+  (function_call
+    receiver: (event
+      pairs: (associative_item
+        key: (event_key)
+        value: (item
+          (literal
+            (number
+              (integer)))))
+      pairs: (associative_item
+        key: (event_key)
+        value: (item
+          (literal
+            (number
+              (float))))))
+    (method_call
+      name: (method_name))))
+
+==================
+Stream comprehension simple
+==================
+{: x, x <- (1..10) };
+
+---
+
+(source_file
+  (list_comprehension
+    body: (variable
+      (environment_var
+        name: (identifier)))
+    (comprehension_generator
+      name: (variable
+        (environment_var
+          name: (identifier)))
+      (generator_arrow)
+      collection: (collection
+        (arithmetic_series
+          (number
+            (integer))
+          (number
+            (integer)))))))
+
+==================
+Stream comprehension with filter
+==================
+{: x, x <- (1..20), x.odd };
+
+---
+
+(source_file
+  (list_comprehension
+    body: (variable
+      (environment_var
+        name: (identifier)))
+    (comprehension_generator
+      name: (variable
+        (environment_var
+          name: (identifier)))
+      (generator_arrow)
+      collection: (collection
+        (arithmetic_series
+          (number
+            (integer))
+          (number
+            (integer)))))
+    (comprehension_filter
+      (function_call
+        receiver: (variable
+          (environment_var
+            name: (identifier)))
+        (method_call
+          name: (method_name))))))
+
+==================
+Stream comprehension with expression output
+==================
+{: x * 2, x <- (1..5) };
+
+---
+
+(source_file
+  (list_comprehension
+    body: (binary_expression
+      left: (variable
+        (environment_var
+          name: (identifier)))
+      right: (literal
+        (number
+          (integer))))
+    (comprehension_generator
+      name: (variable
+        (environment_var
+          name: (identifier)))
+      (generator_arrow)
+      collection: (collection
+        (arithmetic_series
+          (number
+            (integer))
+          (number
+            (integer)))))))
+
+==================
+Stream comprehension with array output
+==================
+{: [x, y], x <- (1..3), y <- (10..12) };
+
+---
+
+(source_file
+  (list_comprehension
+    body: (collection
+      (variable
+        (environment_var
+          name: (identifier)))
+      (variable
+        (environment_var
+          name: (identifier))))
+    (comprehension_generator
+      name: (variable
+        (environment_var
+          name: (identifier)))
+      (generator_arrow)
+      collection: (collection
+        (arithmetic_series
+          (number
+            (integer))
+          (number
+            (integer)))))
+    (comprehension_generator
+      name: (variable
+        (environment_var
+          name: (identifier)))
+      (generator_arrow)
+      collection: (collection
+        (arithmetic_series
+          (number
+            (integer))
+          (number
+            (integer)))))))
+
+==================
+Stream comprehension with var binding
+==================
+{: [y, z], x <- (0..10), var y = x.squared, var z = y + 1 };
+
+---
+
+(source_file
+  (list_comprehension
+    body: (collection
+      (variable
+        (environment_var
+          name: (identifier)))
+      (variable
+        (environment_var
+          name: (identifier))))
+    (comprehension_generator
+      name: (variable
+        (environment_var
+          name: (identifier)))
+      (generator_arrow)
+      collection: (collection
+        (arithmetic_series
+          (number
+            (integer))
+          (number
+            (integer)))))
+    (comprehension_binding
+      name: (identifier)
+      value: (function_call
+        receiver: (variable
+          (environment_var
+            name: (identifier)))
+        (method_call
+          name: (method_name))))
+    (comprehension_binding
+      name: (identifier)
+      value: (binary_expression
+        left: (variable
+          (environment_var
+            name: (identifier)))
+        right: (literal
+          (number
+            (integer)))))))
+
+==================
+all comprehension
+==================
+all {: x, x <- (1..10), x > 5 };
+
+---
+
+(source_file
+  (function_call
+    callee: (method_name)
+    comprehension: (list_comprehension
+      body: (variable
+        (environment_var
+          name: (identifier)))
+      (comprehension_generator
+        name: (variable
+          (environment_var
+            name: (identifier)))
+        (generator_arrow)
+        collection: (collection
+          (arithmetic_series
+            (number
+              (integer))
+            (number
+              (integer)))))
+      (comprehension_filter
+        (binary_expression
+          left: (variable
+            (environment_var
+              name: (identifier)))
+          right: (literal
+            (number
+              (integer))))))))
+
+==================
+Ref expression with literal
+==================
+`1;
+
+---
+
+(source_file
+  (ref_expression
+    (ref)
+    (literal
+      (number
+        (integer)))))
+
+==================
+Ref expression with symbol
+==================
+`\freq;
+
+---
+
+(source_file
+  (ref_expression
+    (ref)
+    (literal
+      (symbol
+        (identifier)))))
+
+==================
+Ref expression with function call
+==================
+`Pwhite(0, 9, 5);
+
+---
+
+(source_file
+  (ref_expression
+    (ref)
+    (function_call
+      callee: (class)
+      arguments: (parameter_call_list
+        (argument_calls
+          (unnamed_argument
+            (literal
+              (number
+                (integer)))))
+        (argument_calls
+          (unnamed_argument
+            (literal
+              (number
+                (integer)))))
+        (argument_calls
+          (unnamed_argument
+            (literal
+              (number
+                (integer)))))))))
+
+==================
+Array of ref expressions
+==================
+[`Pwhite(0, 9), `Pwhite(10, 19)];
+
+---
+
+(source_file
+  (collection
+    (ref_expression
+      (ref)
+      (function_call
+        callee: (class)
+        arguments: (parameter_call_list
+          (argument_calls
+            (unnamed_argument
+              (literal
+                (number
+                  (integer)))))
+          (argument_calls
+            (unnamed_argument
+              (literal
+                (number
+                  (integer))))))))
+    (ref_expression
+      (ref)
+      (function_call
+        callee: (class)
+        arguments: (parameter_call_list
+          (argument_calls
+            (unnamed_argument
+              (literal
+                (number
+                  (integer)))))
+          (argument_calls
+            (unnamed_argument
+              (literal
+                (number
+                  (integer))))))))))
+
+==================
+Trailing comma in function call
+==================
+SinOsc.ar(440, 0,);
+
+---
+
+(source_file
+  (function_call
+    receiver: (class)
+    (method_call
+      name: (method_name)
+      arguments: (parameter_call_list
+        (argument_calls
+          (unnamed_argument
+            (literal
+              (number
+                (integer)))))
+        (argument_calls
+          (unnamed_argument
+            (literal
+              (number
+                (integer)))))))))
+
+==================
+Trailing comma in array
+==================
+[1, 2, 3,];
+
+---
+
+(source_file
+  (collection
+    (literal
+      (number
+        (integer)))
+    (literal
+      (number
+        (integer)))
+    (literal
+      (number
+        (integer)))))
+
+==================
+expr.if with non-block arguments
+==================
+x.if(1, 0);
+
+---
+
+(source_file
+  (control_structure
+    (if
+      expression: (variable
+        (environment_var
+          name: (identifier)))
+      true: (literal
+        (number
+          (integer)))
+      false: (literal
+        (number
+          (integer))))))
+
+==================
+expr.if with expression arguments
+==================
+cond.if(a + b, c * d);
+
+---
+
+(source_file
+  (control_structure
+    (if
+      expression: (variable
+        (local_var
+          name: (identifier)))
+      true: (binary_expression
+        left: (variable
+          (environment_var
+            name: (identifier)))
+        right: (variable
+          (environment_var
+            name: (identifier))))
+      false: (binary_expression
+        left: (variable
+          (environment_var
+            name: (identifier)))
+        right: (variable
+          (environment_var
+            name: (identifier)))))))
+
+==================
+Complex expr.if with UGen
+==================
+{ Trig1.ar(Dust.ar(3), 0.2).if(FSinOsc.ar(440), FSinOsc.ar(880)) }.play;
+
+---
+
+(source_file
+  (function_call
+    receiver: (function_block
+      body: (control_structure
+        (if
+          expression: (function_call
+            receiver: (class)
+            (method_call
+              name: (method_name)
+              arguments: (parameter_call_list
+                (argument_calls
+                  (unnamed_argument
+                    (function_call
+                      receiver: (class)
+                      (method_call
+                        name: (method_name)
+                        arguments: (parameter_call_list
+                          (argument_calls
+                            (unnamed_argument
+                              (literal
+                                (number
+                                  (integer))))))))))
+                (argument_calls
+                  (unnamed_argument
+                    (literal
+                      (number
+                        (float))))))))
+          true: (function_call
+            receiver: (class)
+            (method_call
+              name: (method_name)
+              arguments: (parameter_call_list
+                (argument_calls
+                  (unnamed_argument
+                    (literal
+                      (number
+                        (integer))))))))
+          false: (function_call
+            receiver: (class)
+            (method_call
+              name: (method_name)
+              arguments: (parameter_call_list
+                (argument_calls
+                  (unnamed_argument
+                    (literal
+                      (number
+                        (integer)))))))))))
+    (method_call
+      name: (method_name))))
+
+==================
+Double trailing block on if
+==================
+if (x > 0) { "positive" } { "non-positive" };
+
+---
+
+(source_file
+  (control_structure
+    (if
+      expression: (binary_expression
+        left: (variable
+          (environment_var
+            name: (identifier)))
+        right: (literal
+          (number
+            (integer))))
+      true: (function_block
+        body: (literal
+          (string)))
+      false: (function_block
+        body: (literal
+          (string))))))
+
+==================
+Double trailing block on method
+==================
+x.if { "yes" } { "no" };
+
+---
+
+(source_file
+  (control_structure
+    (if
+      expression: (variable
+        (environment_var
+          name: (identifier)))
+      true: (function_block
+        body: (literal
+          (string)))
+      false: (function_block
+        body: (literal
+          (string))))))
+
+==================
+Method call named if (not control structure)
+==================
+BusPlug.for(z);
+
+---
+
+(source_file
+  (function_call
+    receiver: (class)
+    (method_call
+      name: (method_name)
+      arguments: (parameter_call_list
+        (argument_calls
+          (unnamed_argument
+            (variable
+              (environment_var
+                name: (identifier)))))))))
+
+==================
+Named argument with event key style
+==================
+SinOsc.ar(freq: 440, mul: 0.1);
+
+---
+
+(source_file
+  (function_call
+    receiver: (class)
+    (method_call
+      name: (method_name)
+      arguments: (parameter_call_list
+        (argument_calls
+          (named_argument
+            name: (identifier)
+            name: (literal
+              (number
+                (integer)))))
+        (argument_calls
+          (named_argument
+            name: (identifier)
+            name: (literal
+              (number
+                (float)))))))))
+
+==================
+Mixed positional and named arguments
+==================
+SinOsc.ar(440, 0, mul: 0.1);
+
+---
+
+(source_file
+  (function_call
+    receiver: (class)
+    (method_call
+      name: (method_name)
+      arguments: (parameter_call_list
+        (argument_calls
+          (unnamed_argument
+            (literal
+              (number
+                (integer)))))
+        (argument_calls
+          (unnamed_argument
+            (literal
+              (number
+                (integer)))))
+        (argument_calls
+          (named_argument
+            name: (identifier)
+            name: (literal
+              (number
+                (float)))))))))
+
+==================
+Backslash named argument
+==================
+SinOsc.ar(\freq, 440);
+
+---
+
+(source_file
+  (function_call
+    receiver: (class)
+    (method_call
+      name: (method_name)
+      arguments: (parameter_call_list
+        (argument_calls
+          (unnamed_argument
+            (literal
+              (symbol
+                (identifier)))))
+        (argument_calls
+          (unnamed_argument
+            (literal
+              (number
+                (integer)))))))))
+
+==================
+Function with trailing block
+==================
+10.do { |i| i.postln };
+
+---
+
+(source_file
+  (function_call
+    receiver: (literal
+      (number
+        (integer)))
+    (method_call
+      name: (method_name)
+      block: (function_block
+        params: (parameter_list
+          (pipe_parameter_list
+            (pipe_token)
+            (pipe_argument
+              name: (identifier))
+            (pipe_token)))
+        body: (function_call
+          receiver: (variable
+            (environment_var
+              name: (identifier)))
+          (method_call
+            name: (method_name)))))))
+
+==================
+collect with trailing block
+==================
+(1..10).collect { |x| x * 2 };
+
+---
+
+(source_file
+  (function_call
+    receiver: (collection
+      (arithmetic_series
+        (number
+          (integer))
+        (number
+          (integer))))
+    (method_call
+      name: (method_name)
+      block: (function_block
+        params: (parameter_list
+          (pipe_parameter_list
+            (pipe_token)
+            (pipe_argument
+              name: (identifier))
+            (pipe_token)))
+        body: (binary_expression
+          left: (variable
+            (environment_var
+              name: (identifier)))
+          right: (literal
+            (number
+              (integer))))))))
+
+==================
+Chained method calls with trailing blocks
+==================
+(1..10).select { |x| x.odd }.collect { |x| x * 2 };
+
+---
+
+(source_file
+  (function_call
+    receiver: (function_call
+      receiver: (collection
+        (arithmetic_series
+          (number
+            (integer))
+          (number
+            (integer))))
+      (method_call
+        name: (method_name)
+        block: (function_block
+          params: (parameter_list
+            (pipe_parameter_list
+              (pipe_token)
+              (pipe_argument
+                name: (identifier))
+              (pipe_token)))
+          body: (function_call
+            receiver: (variable
+              (environment_var
+                name: (identifier)))
+            (method_call
+              name: (method_name))))))
+    (method_call
+      name: (method_name)
+      block: (function_block
+        params: (parameter_list
+          (pipe_parameter_list
+            (pipe_token)
+            (pipe_argument
+              name: (identifier))
+            (pipe_token)))
+        body: (binary_expression
+          left: (variable
+            (environment_var
+              name: (identifier)))
+          right: (literal
+            (number
+              (integer))))))))

@@ -1,0 +1,31 @@
+======================
+indexed env and arrays
+======================
+
+env[\name];
+env[nameVar];
+arr[i];
+
+---
+
+(source_file
+  (indexed_collection
+    (variable
+      (local_var
+        (identifier)))
+    (symbol
+      (identifier)))
+  (indexed_collection
+    (variable
+      (local_var
+        (identifier)))
+    (variable
+      (local_var
+        (identifier))))
+  (indexed_collection
+    (variable
+      (local_var
+        (identifier)))
+    (variable
+      (environment_var
+        (identifier)))))

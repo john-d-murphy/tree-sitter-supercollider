@@ -1,0 +1,298 @@
+===
+nested collection with event and comments
+===
+[
+1,
+(
+key: "value",
+list: [10, 20, 30],
+// closing bracket for inner list:
+),
+// closing parenthesis for event:
+]
+---
+
+(source_file
+  (collection
+    (literal
+      (number
+        (integer)))
+    (event
+      (associative_item
+        (event_key)
+        (item
+          (literal
+            (string))))
+      (associative_item
+        (event_key)
+        (item
+          (collection
+            (literal
+              (number
+                (integer)))
+            (literal
+              (number
+                (integer)))
+            (literal
+              (number
+                (integer))))))
+      (line_comment))
+    (line_comment)))
+
+===
+multiple top-level expressions with optional final semicolon
+===
+a = 1;
+b = 2;
+c = a + b
+---
+
+(source_file
+  (variable_definition
+    (variable
+      (environment_var
+        (identifier)))
+    (literal
+      (number
+        (integer))))
+  (variable_definition
+    (variable
+      (environment_var
+        (identifier)))
+    (literal
+      (number
+        (integer))))
+  (variable_definition
+    (variable
+      (environment_var
+        (identifier)))
+    (binary_expression
+      (variable
+        (environment_var
+          (identifier)))
+      (variable
+        (environment_var
+          (identifier))))))
+
+===
+single function call without semicolon
+===
+"hello".postln
+---
+
+(source_file
+  (function_call
+    (literal
+      (string))
+    (method_call
+      (method_name))))
+
+===
+single function call with semicolon
+===
+"hello".postln;
+---
+
+(source_file
+  (function_call
+    (literal
+      (string))
+    (method_call
+      (method_name))))
+
+===
+code block expression sequence with trailing optional semicolon
+===
+(
+var a = 1;
+a = a + 1;
+a.postln
+)
+---
+
+(source_file
+  (code_block
+    (variable_definition_sequence
+      (var_binding
+        (identifier)
+        (literal
+          (number
+            (integer)))))
+    (variable_definition
+      (variable
+        (environment_var
+          (identifier)))
+      (binary_expression
+        (variable
+          (environment_var
+            (identifier)))
+        (literal
+          (number
+            (integer)))))
+    (function_call
+      (variable
+        (environment_var
+          (identifier)))
+      (method_call
+        (method_name)))))
+
+===
+event with trailing comma in last pair
+===
+(
+freq: 440,
+amp: 0.1,
+)
+---
+
+(source_file
+  (event
+    (associative_item
+      (event_key)
+      (item
+        (literal
+          (number
+            (integer)))))
+    (associative_item
+      (event_key)
+      (item
+        (literal
+          (number
+            (float)))))))
+
+===
+mixed collection event and message send
+===
+[
+\one,
+(
+value: 3,
+).postln
+]
+---
+
+(source_file
+  (collection
+    (literal
+      (symbol
+        (identifier)))
+    (function_call
+      (event
+        (associative_item
+          (event_key)
+          (item
+            (literal
+              (number
+                (integer))))))
+      (method_call
+        (method_name)))))
+
+===
+case control structure assignment
+===
+x = case
+{ i == 1.5 } { \wrong }
+{ true }     { \wrong }
+{ i == 0 }   { \true };
+---
+
+(source_file
+  (variable_definition
+    (variable
+      (environment_var
+        (identifier)))
+    (control_structure
+      (case
+        (function_block
+          (binary_expression
+            (variable
+              (environment_var
+                (identifier)))
+            (literal
+              (number
+                (float)))))
+        (function_block
+          (literal
+            (symbol
+              (identifier))))
+        (function_block
+          (literal
+            (bool)))
+        (function_block
+          (literal
+            (symbol
+              (identifier))))
+        (function_block
+          (binary_expression
+            (variable
+              (environment_var
+                (identifier)))
+            (literal
+              (number
+                (integer)))))
+        (function_block
+          (literal
+            (symbol
+              (identifier))))))))
+
+===
+switch in larger context
+===
+for (0, 10, 1, { |i|
+i.postln
+});
+
+switch (x,
+0, { "zero".postln },
+1, { "one".postln }
+);
+---
+
+(source_file
+  (control_structure
+    (for
+      (literal
+        (number
+          (integer)))
+      (literal
+        (number
+          (integer)))
+      (literal
+        (number
+          (integer)))
+      (function_block
+        params: (parameter_list
+          (pipe_parameter_list
+            (pipe_token)
+            (pipe_argument
+              name: (identifier))
+            (pipe_token)))
+        body: (function_call
+          receiver: (variable
+            (environment_var
+              name: (identifier)))
+          (method_call
+            name: (method_name))))))
+  (control_structure
+    (switch
+      selector: (variable
+        (environment_var
+          name: (identifier)))
+      test: (literal
+        (number
+          (integer)))
+      body: (function_block
+        body: (function_call
+          receiver: (literal
+            (string))
+          (method_call
+            name: (method_name))))
+      test: (literal
+        (number
+          (integer)))
+      body: (function_block
+        body: (function_call
+          receiver: (literal
+            (string))
+          (method_call
+            name: (method_name)))))))

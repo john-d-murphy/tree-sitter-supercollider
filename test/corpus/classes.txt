@@ -5,8 +5,54 @@ Class extensions
 	someMethod{}
 }
 ---
+
 (source_file
   (class_def
-    (class )
-    (instance_method_name )
-    (function_block )))
+    (class)
+    (instance_method_name)
+    (function_block)))
+
+=====
+Class methods with star prefix
+=====
+
+MyClass {
+    *new { ^super.new }
+    *init {
+        var x = 10;
+        x
+    }
+    instanceMethod { "hello" }
+}
+
+---
+
+(source_file
+  (class_def
+    (class)
+    (class_method_marker)
+    (class_method_name)
+    (function_block
+      body: (return_statement
+        (function_call
+          receiver: (variable
+            (local_var
+              name: (identifier)))
+          (method_call
+            name: (method_name)))))
+    (class_method_marker)
+    (class_method_name)
+    (function_block
+      body: (variable_definition_sequence
+        (var_binding
+          name: (identifier)
+          value: (literal
+            (number
+              (integer)))))
+      body: (variable
+        (environment_var
+          name: (identifier))))
+    (instance_method_name)
+    (function_block
+      body: (literal
+        (string)))))

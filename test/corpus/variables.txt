@@ -5,14 +5,15 @@ YoYO{
     const <yo=2;
 }
 ---
+
 (source_file
   (class_def
-    (class )
+    (class)
     (const
-      name: (identifier ))
+      name: (identifier))
     (literal
       (number
-        (integer )))))
+        (integer)))))
 
 ====================
 instance variables with setters and getters
@@ -23,16 +24,17 @@ var >yo;
 var <yo;
 
 ---
+
 (source_file
   (variable
     (instance_var
-      name: (identifier )))
+      name: (identifier)))
   (variable
     (instance_var
-      name: (identifier )))
+      name: (identifier)))
   (variable
     (instance_var
-      name: (identifier ))))
+      name: (identifier))))
 
 ====================
 class variables with setters and getters
@@ -43,16 +45,17 @@ classvar >yo;
 classvar <yo;
 
 ---
+
 (source_file
   (variable
     (classvar
-      name: (identifier )))
+      name: (identifier)))
   (variable
     (classvar
-      name: (identifier )))
+      name: (identifier)))
   (variable
     (classvar
-      name: (identifier ))))
+      name: (identifier))))
 
 ==================
 multiple variable assignment
@@ -63,29 +66,24 @@ var v1, v2, v3=1000, v4=\yo;
 )
 
 ---
+
 (source_file
   (code_block
     (variable_definition_sequence
-      (variable
-        (local_var
-          name: (identifier )))
-      (variable
-        (local_var
-          name: (identifier )))
-      (variable_definition
-        name: (variable
-          (local_var
-            name: (identifier )))
+      (var_binding
+        name: (identifier))
+      (var_binding
+        name: (identifier))
+      (var_binding
+        name: (identifier)
         value: (literal
           (number
-            (integer ))))
-      (variable_definition
-        name: (variable
-          (local_var
-            name: (identifier )))
+            (integer))))
+      (var_binding
+        name: (identifier)
         value: (literal
           (symbol
-            (identifier )))))))
+            (identifier)))))))
 
 ==================
 class alias in environment var
@@ -94,13 +92,14 @@ class alias in environment var
 s = Server;
 )
 ---
+
 (source_file
   (code_block
     (variable_definition
       name: (variable
         (environment_var
-          name: (identifier )))
-      value: (class ))))
+          name: (identifier)))
+      value: (class))))
 
 ==================
 variable types
@@ -111,36 +110,37 @@ a = 2;
 classvar classy = 4;
 
 ---
+
 (source_file
   (variable_definition
     name: (variable
-      (local_var
-        name: (identifier )))
+      (instance_var
+        name: (identifier)))
     value: (literal
       (number
-        (integer ))))
+        (integer))))
   (variable_definition
     name: (variable
       (environment_var
-        name: (identifier )))
+        name: (identifier)))
     value: (literal
       (number
-        (integer ))))
+        (integer))))
   (variable_definition
     name: (variable
       (environment_var
-        name: (identifier )
-        name: (identifier )))
+        name: (identifier)
+        name: (identifier)))
     value: (literal
       (number
-        (integer ))))
+        (integer))))
   (variable_definition
     name: (variable
       (classvar
-        name: (identifier )))
+        name: (identifier)))
     value: (literal
       (number
-        (integer )))))
+        (integer)))))
 
 ==================
 binary variable operation
@@ -150,29 +150,30 @@ var num2 = 4;
 var num3 = num1 + num2;
 
 ---
+
 (source_file
   (variable_definition
-   name: (variable
-      (local_var name:
-        (identifier )))
+    name: (variable
+      (instance_var
+        name: (identifier)))
     value: (literal
       (number
-        (integer ))))
+        (integer))))
   (variable_definition
-   name: (variable
-      (local_var name:
-        (identifier )))
+    name: (variable
+      (instance_var
+        name: (identifier)))
     value: (literal
       (number
-        (integer ))))
+        (integer))))
   (variable_definition
-   name: (variable
-      (local_var name:
-        (identifier )))
+    name: (variable
+      (instance_var
+        name: (identifier)))
     value: (binary_expression
       left: (variable
-        (local_var name:
-          (identifier )))
+        (local_var
+          name: (identifier)))
       right: (variable
-        (local_var name:
-          (identifier))))))
+        (local_var
+          name: (identifier))))))
