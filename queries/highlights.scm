@@ -6,17 +6,20 @@
 (block_comment) @comment @spell
 
 ; Argument definition
-(argument 
+(argument
+  name: (identifier) @variable.parameter)
+
+(pipe_argument
   name: (identifier) @variable.parameter)
 
 ; Variable argument
 [ "..." ] @variable.parameter
 
 ; Variables
-(local_var 
+(local_var
   name: (identifier) @variable)
 
-(environment_var 
+(environment_var
   name:(identifier) @variable.builtin)
 
 (builtin_var) @constant.builtin
@@ -31,9 +34,11 @@
 
 (method_name) @function.method.call
 
-; Collections
-(associative_item
-  (identifier) @property)
+; Collections - event keys
+(event_key) @property
+
+; Collection types
+(collection_type) @type
 
 ; Classes
 (class) @type
@@ -70,12 +75,14 @@
 ; Arithmetic series operator
 [ ".." ] @operator
 
+; Generator arrow for comprehensions
+(generator_arrow) @operator
+
 ; Operators
 [
   "&&"
   "||"
   "&"
-  "|"
   "^"
   "=="
   "!="
@@ -98,6 +105,7 @@
   "++"
   "+/+"
 ] @operator
+(pipe_token) @operator
 
 ; Keywords
 [
@@ -110,7 +118,8 @@
 ] @keyword
 
 ; Brackets
-[ "(" ")" "[" "]" "{" "}" "|" ] @punctuation.bracket
+[ "(" ")" "[" "]" "{" "}" ] @punctuation.bracket
+(pipe_token) @punctuation.bracket
 
 ; Delimeters
 [ ";" "." "," ] @punctuation.delimiter

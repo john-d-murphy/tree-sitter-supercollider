@@ -1,0 +1,3 @@
+MyClass {
+*new { ^super.new }
+}

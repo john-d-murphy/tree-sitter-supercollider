@@ -1,0 +1,5 @@
+MyClass {
+    *new { ^super.new }
+    *init { "class method" }
+    init { "instance method" }
+}

@@ -1,0 +1,45 @@
+(source_file [0, 0] - [8, 0]
+  (control_structure [0, 0] - [2, 2]
+    (for [0, 0] - [2, 2]
+      (literal [0, 5] - [0, 6]
+        (number [0, 5] - [0, 6]
+          (integer [0, 5] - [0, 6])))
+      (literal [0, 8] - [0, 10]
+        (number [0, 8] - [0, 10]
+          (integer [0, 8] - [0, 10])))
+      (literal [0, 12] - [0, 13]
+        (number [0, 12] - [0, 13]
+          (integer [0, 12] - [0, 13])))
+      (function_block [0, 15] - [2, 1]
+        params: (parameter_list [0, 17] - [0, 20]
+          (argument [0, 18] - [0, 19]
+            name: (identifier [0, 18] - [0, 19])))
+        body: (function_call [1, 0] - [1, 8]
+          receiver: (variable [1, 0] - [1, 1]
+            (environment_var [1, 0] - [1, 1]
+              name: (identifier [1, 0] - [1, 1])))
+          (method_call [1, 1] - [1, 8]
+            name: (method_name [1, 2] - [1, 8]))))))
+  (control_structure [4, 0] - [7, 1]
+    (switch [4, 0] - [7, 1]
+      selector: (variable [4, 8] - [4, 9]
+        (environment_var [4, 8] - [4, 9]
+          name: (identifier [4, 8] - [4, 9])))
+      test: (literal [5, 0] - [5, 1]
+        (number [5, 0] - [5, 1]
+          (integer [5, 0] - [5, 1])))
+      body: (function_block [5, 3] - [5, 20]
+        body: (function_call [5, 5] - [5, 18]
+          receiver: (literal [5, 5] - [5, 11]
+            (string [5, 5] - [5, 11]))
+          (method_call [5, 11] - [5, 18]
+            name: (method_name [5, 12] - [5, 18]))))
+      test: (literal [6, 0] - [6, 1]
+        (number [6, 0] - [6, 1]
+          (integer [6, 0] - [6, 1])))
+      body: (function_block [6, 3] - [6, 19]
+        body: (function_call [6, 5] - [6, 17]
+          receiver: (literal [6, 5] - [6, 10]
+            (string [6, 5] - [6, 10]))
+          (method_call [6, 10] - [6, 17]
+            name: (method_name [6, 11] - [6, 17])))))))

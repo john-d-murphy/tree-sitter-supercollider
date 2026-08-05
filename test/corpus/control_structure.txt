@@ -5,6 +5,7 @@ If-statements with no commas: if(expr) trueFunc falseFunc
 if(1<0.5){6+6+6}{666}
 )
 ---
+
 (source_file
   (code_block
     (control_structure
@@ -12,26 +13,27 @@ if(1<0.5){6+6+6}{666}
         expression: (binary_expression
           left: (literal
             (number
-              (integer )))
+              (integer)))
           right: (literal
             (number
-              (float ))))
+              (float))))
         true: (function_block
-          (binary_expression
+          body: (binary_expression
             left: (binary_expression
               left: (literal
                 (number
-                  (integer )))
+                  (integer)))
               right: (literal
                 (number
-                  (integer ))))
+                  (integer))))
             right: (literal
               (number
-                (integer )))))
+                (integer)))))
         false: (function_block
-          (literal
+          body: (literal
             (number
-              (integer ))))))))
+              (integer))))))))
+
 ==================
 If-statements with double binary expressions
 ==================
@@ -39,33 +41,32 @@ If-statements with double binary expressions
 if(a.isKindOf(Stream) && a.class == Routine, {}, {});
 )
 ---
+
 (source_file
   (code_block
     (control_structure
       (if
         expression: (binary_expression
           left: (function_call
-            (receiver
-              (binary_expression
-                left: (function_call
-                  (receiver
-                    (variable
-                      (environment_var
-                        name: (identifier ))))
-                  (method_call
-                    name: (method_name )
-                    (parameter_call_list
-                      (argument_calls
-                        (unnamed_argument
-                          (class ))))))
-                right: (variable
+            receiver: (binary_expression
+              left: (function_call
+                receiver: (variable
                   (environment_var
-                    name: (identifier )))))
+                    name: (identifier)))
+                (method_call
+                  name: (method_name)
+                  arguments: (parameter_call_list
+                    (argument_calls
+                      (unnamed_argument
+                        (class))))))
+              right: (variable
+                (environment_var
+                  name: (identifier))))
             (method_call
-              name: (method_name )))
-          right: (class ))
-        true: (function_block )
-        false: (function_block )))))
+              name: (method_name)))
+          right: (class))
+        true: (function_block)
+        false: (function_block)))))
 
 ==================
 function call in if expression
@@ -74,23 +75,23 @@ function call in if expression
 if(nil.isNil, { "hello".postln });
 )
 ---
+
 (source_file
   (code_block
     (control_structure
       (if
         expression: (function_call
-          (receiver
-            (variable
-              (builtin_var )))
+          receiver: (variable
+            (builtin_var))
           (method_call
-            name: (method_name )))
+            name: (method_name)))
         true: (function_block
-          (function_call
-            (receiver
-              (literal
-                (string )))
+          body: (function_call
+            receiver: (literal
+              (string))
             (method_call
-              name: (method_name ))))))))
+              name: (method_name))))))))
+
 ==================
 if with one clause
 ==================
@@ -98,61 +99,60 @@ if(1 == 1, { "is true".postln; });
 if(true, { "is true".postln; });
 
 ---
+
 (source_file
   (control_structure
     (if
       expression: (binary_expression
         left: (literal
           (number
-            (integer )))
+            (integer)))
         right: (literal
           (number
-            (integer ))))
+            (integer))))
       true: (function_block
-        (function_call
-          (receiver
-            (literal
-              (string )))
+        body: (function_call
+          receiver: (literal
+            (string))
           (method_call
-            name: (method_name ))))))
+            name: (method_name))))))
   (control_structure
     (if
       expression: (literal
-        (bool ))
+        (bool))
       true: (function_block
-        (function_call
-          (receiver
-            (literal
-              (string )))
+        body: (function_call
+          receiver: (literal
+            (string))
           (method_call
-            name: (method_name )))))))
+            name: (method_name)))))))
 
 ==================
 if with two clauses
 ==================
 if(1 == 2, { "is true".postln; }, { 2; });
 ---
+
 (source_file
   (control_structure
     (if
       expression: (binary_expression
         left: (literal
           (number
-            (integer )))
+            (integer)))
         right: (literal
           (number
-            (integer ))))
+            (integer))))
       true: (function_block
-        (function_call
-          (receiver
-            (literal
-              (string )))
+        body: (function_call
+          receiver: (literal
+            (string))
           (method_call
-            name: (method_name ))))
+            name: (method_name))))
       false: (function_block
-        (literal
+        body: (literal
           (number
-            (integer )))))))
+            (integer)))))))
 
 ==================
 expr.if with two clauses
@@ -160,23 +160,22 @@ expr.if with two clauses
 
 true.if({ "hello".postln; }, { "no".postln; });
 ---
+
 (source_file
   (control_structure
     (if
       expression: (literal
-        (bool ))
+        (bool))
       true: (function_block
-        (function_call
-          (receiver
-            (literal
-              (string )))
+        body: (function_call
+          receiver: (literal
+            (string))
           (method_call
-            name: (method_name ))))
+            name: (method_name))))
       false: (function_block
-        (function_call
-          (receiver
-            (literal
-              (string )))
+        body: (function_call
+          receiver: (literal
+            (string))
           (method_call
             name: (method_name)))))))
 
@@ -187,18 +186,18 @@ expr.if with one clause
 true.if({ "hello".postln; });
 
 ---
+
 (source_file
   (control_structure
     (if
       expression: (literal
-        (bool ))
+        (bool))
       true: (function_block
-        (function_call
-          (receiver
-            (literal
-              (string )))
+        body: (function_call
+          receiver: (literal
+            (string))
           (method_call
-            name: (method_name )))))))
+            name: (method_name)))))))
 
 ==================
 (expr).if with one clause
@@ -206,6 +205,7 @@ true.if({ "hello".postln; });
 (0 > 1).if({ "that can't be true!".postln; });
 
 ---
+
 (source_file
   (control_structure
     (if
@@ -213,17 +213,16 @@ true.if({ "hello".postln; });
         (binary_expression
           left: (literal
             (number
-              (integer )))
+              (integer)))
           right: (literal
             (number
-              (integer )))))
+              (integer)))))
       true: (function_block
-        (function_call
-          (receiver
-            (literal
-              (string )))
+        body: (function_call
+          receiver: (literal
+            (string))
           (method_call
-            name: (method_name )))))))
+            name: (method_name)))))))
 
 ==================
 while(func, func)
@@ -231,24 +230,24 @@ while(func, func)
 while( {1 < 10;}, { "still counting".println;});
 
 ---
+
 (source_file
   (control_structure
     (while
       test_func: (function_block
-        (binary_expression
+        body: (binary_expression
           left: (literal
             (number
-              (integer )))
+              (integer)))
           right: (literal
             (number
-              (integer )))))
+              (integer)))))
       body_func: (function_block
-        (function_call
-          (receiver
-            (literal
-              (string )))
+        body: (function_call
+          receiver: (literal
+            (string))
           (method_call
-            name: (method_name )))))))
+            name: (method_name)))))))
 
 ==================
 func.while{func}
@@ -258,24 +257,24 @@ func.while{func}
 };
 
 ---
+
 (source_file
   (control_structure
     (while
       expression: (function_block
-        (binary_expression
+        body: (binary_expression
           left: (literal
             (number
-              (integer )))
+              (integer)))
           right: (literal
             (number
-              (integer )))))
+              (integer)))))
       body_func: (function_block
-        (function_call
-          (receiver
-            (literal
-              (string )))
+        body: (function_call
+          receiver: (literal
+            (string))
           (method_call
-            name: (method_name )))))))
+            name: (method_name)))))))
 
 ==================
 while {test} {body}
@@ -289,13 +288,12 @@ while { false } { "never".postln };
   (control_structure
     (while
       test_func: (function_block
-        (literal
+        body: (literal
           (bool)))
       body_func: (function_block
-        (function_call
-          (receiver
-            (literal
-              (string)))
+        body: (function_call
+          receiver: (literal
+            (string))
           (method_call
             name: (method_name)))))))
 
@@ -305,48 +303,61 @@ for(start, end, func)
 
 for(1,10,{|i| i.postln});
 ---
+
 (source_file
   (control_structure
     (for
-      (integer )
-      (integer )
+      (literal
+        (number
+          (integer)))
+      (literal
+        (number
+          (integer)))
       (function_block
-        (parameter_list
-          (argument name:
-            (identifier )))
-        (function_call
-          (receiver
-            (variable
-              (environment_var name: (identifier))))
+        params: (parameter_list
+          (pipe_parameter_list
+            (pipe_token)
+            (pipe_argument
+              name: (identifier))
+            (pipe_token)))
+        body: (function_call
+          receiver: (variable
+            (environment_var
+              name: (identifier)))
           (method_call
-            name: (method_name )))))))
+            name: (method_name)))))))
 
 ==================
 start.for(end, func)
 ==================
 1.for(10,{|i| i.postln});
 ---
+
 (source_file
   (control_structure
     (for
-      (integer )
-      (integer )
+      (integer)
+      (integer)
       (function_block
-        (parameter_list
-          (argument name:
-            (identifier )))
-        (function_call
-          (receiver
-            (variable
-              (environment_var name: (identifier))))
+        params: (parameter_list
+          (pipe_parameter_list
+            (pipe_token)
+            (pipe_argument
+              name: (identifier))
+            (pipe_token)))
+        body: (function_call
+          receiver: (variable
+            (environment_var
+              name: (identifier)))
           (method_call
-            name: (method_name )))))))
+            name: (method_name)))))))
 
 ==================
 start.forBy(end, step, func)
 ==================
 1.forBy(2,10,{|i| i.postln});
 ---
+
 (source_file
   (control_structure
     (forby
@@ -354,37 +365,44 @@ start.forBy(end, step, func)
       (integer)
       (integer)
       (function_block
-        (parameter_list
-          (argument name:
-            (identifier )))
-        (function_call
-          (receiver
-            (variable
-              (environment_var name: (identifier))))
+        params: (parameter_list
+          (pipe_parameter_list
+            (pipe_token)
+            (pipe_argument
+              name: (identifier))
+            (pipe_token)))
+        body: (function_call
+          receiver: (variable
+            (environment_var
+              name: (identifier)))
           (method_call
-            name: (method_name )))))))
+            name: (method_name)))))))
 
 ==================
 forBy(start, end, step, func)
 ==================
 1.forBy(2,10,{|i| i.postln});
 ---
+
 (source_file
   (control_structure
     (forby
-      (integer )
-      (integer )
-      (integer )
+      (integer)
+      (integer)
+      (integer)
       (function_block
-        (parameter_list
-          (argument name:
-            (identifier )))
-        (function_call
-          (receiver
-            (variable
-              (environment_var name: (identifier))))
+        params: (parameter_list
+          (pipe_parameter_list
+            (pipe_token)
+            (pipe_argument
+              name: (identifier))
+            (pipe_token)))
+        body: (function_call
+          receiver: (variable
+            (environment_var
+              name: (identifier)))
           (method_call
-            name: (method_name )))))))
+            name: (method_name)))))))
 
 ==================
 case
@@ -396,42 +414,46 @@ x = case
 { i == 0 }   { \true };
 )
 ---
+
 (source_file
   (code_block
-    (variable_definition name:
-      (variable
-        (environment_var name: (identifier)))
+    (variable_definition
+      name: (variable
+        (environment_var
+          name: (identifier)))
       value: (control_structure
         (case
           (function_block
-            (binary_expression
+            body: (binary_expression
               left: (variable
-                (environment_var name: (identifier)))
+                (environment_var
+                  name: (identifier)))
               right: (literal
                 (number
-                  (float )))))
+                  (float)))))
           (function_block
-            (literal
+            body: (literal
               (symbol
-                (identifier ))))
+                (identifier))))
           (function_block
-            (literal
-              (bool )))
+            body: (literal
+              (bool)))
           (function_block
-            (literal
+            body: (literal
               (symbol
-                (identifier ))))
+                (identifier))))
           (function_block
-            (binary_expression
+            body: (binary_expression
               left: (variable
-                (environment_var name: (identifier)))
+                (environment_var
+                  name: (identifier)))
               right: (literal
                 (number
-                  (integer )))))
+                  (integer)))))
           (function_block
-            (literal
+            body: (literal
               (symbol
-                (identifier )))))))))
+                (identifier)))))))))
 
 ==================
 simple switch with literal as test value
@@ -442,29 +464,30 @@ switch(0,
 	{0},   { \true });
 )
 ---
+
 (source_file
   (code_block
     (control_structure
       (switch
         (literal
           (number
-            (integer )))
+            (integer)))
         (function_block
           (literal
             (number
-              (integer ))))
+              (integer))))
         (function_block
           (literal
             (symbol
-              (identifier ))))
+              (identifier))))
         (function_block
           (literal
             (number
-              (integer ))))
+              (integer))))
         (function_block
           (literal
             (symbol
-              (identifier ))))))))
+              (identifier))))))))
 
 ============
 Weird kind of switch (no commas)
@@ -482,42 +505,41 @@ switch (201)
   (code_block
     (control_structure
       (switch
-        (code_block
-          (literal
-            (number
-              (integer ))))
+        (literal
+          (number
+            (integer)))
         (function_block
           (literal
             (number
-              (integer ))))
+              (integer))))
         (function_block
           (literal
             (symbol
-              (identifier ))))
+              (identifier))))
         (function_block
           (literal
             (number
-              (float ))))
+              (float))))
         (function_block
           (literal
             (symbol
-              (identifier ))))
+              (identifier))))
         (function_block
           (literal
             (number
-              (integer ))))
+              (integer))))
         (function_block
           (literal
             (symbol
-              (identifier ))))
+              (identifier))))
         (function_block
           (literal
             (number
-              (integer ))))
+              (integer))))
         (function_block
           (literal
             (symbol
-              (identifier ))))))))
+              (identifier))))))))
 
 ===========
 Switch with variable.choose as input
@@ -532,65 +554,144 @@ x = switch (y.choose)
 )
 
 ---
+
 (source_file
   (code_block
-    (variable_definition name:
-      (variable
-        (environment_var name: (identifier)))
+    (variable_definition
+      name: (variable
+        (environment_var
+          name: (identifier)))
       value: (collection
         (literal
           (number
-            (integer )))
+            (integer)))
         (literal
           (number
-            (integer )))
+            (integer)))
         (literal
           (number
-            (integer )))
+            (integer)))
         (literal
           (number
-            (integer )))))
-    (variable_definition name:
-      (variable
-        (environment_var name: (identifier)))
+            (integer)))))
+    (variable_definition
+      name: (variable
+        (environment_var
+          name: (identifier)))
       value: (control_structure
         (switch
-          (code_block
-            (function_call
-              (receiver
-                (variable
-                  (environment_var name: (identifier))))
-              (method_call
-                name: (method_name ))))
-          (function_block
-            (literal
+          selector: (function_call
+            receiver: (variable
+              (environment_var
+                name: (identifier)))
+            (method_call
+              name: (method_name)))
+          test: (function_block
+            body: (literal
               (number
-                (integer ))))
-          (function_block
-            (literal
+                (integer))))
+          body: (function_block
+            body: (literal
               (symbol
-                (identifier ))))
-          (function_block
-            (literal
+                (identifier))))
+          test: (function_block
+            body: (literal
               (number
-                (integer ))))
-          (function_block
-            (literal
+                (integer))))
+          body: (function_block
+            body: (literal
               (symbol
-                (identifier ))))
-          (function_block
-            (literal
+                (identifier))))
+          test: (function_block
+            body: (literal
               (number
-                (integer ))))
-          (function_block
-            (literal
+                (integer))))
+          body: (function_block
+            body: (literal
               (symbol
-                (identifier ))))
-          (function_block
-            (literal
+                (identifier))))
+          test: (function_block
+            body: (literal
               (number
-                (integer ))))
-          (function_block
-            (literal
+                (integer))))
+          body: (function_block
+            body: (literal
               (symbol
-                (identifier )))))))))
+                (identifier)))))))))
+
+======================
+while expression form
+======================
+
+while (arr[0] > 0) {
+    arr[0] = arr[0] - 1;
+};
+
+---
+
+(source_file
+  (control_structure
+    (while
+      expression: (binary_expression
+        left: (indexed_collection
+          (variable
+            (local_var
+              name: (identifier)))
+          index: (number
+            (integer)))
+        right: (literal
+          (number
+            (integer))))
+      body_func: (function_block
+        body: (binary_expression
+          left: (indexed_collection
+            (variable
+              (local_var
+                name: (identifier)))
+            index: (number
+              (integer)))
+          right: (binary_expression
+            left: (indexed_collection
+              (variable
+                (local_var
+                  name: (identifier)))
+              index: (number
+                (integer)))
+            right: (literal
+              (number
+                (integer)))))))))
+
+================================================================================
+for with expression bounds
+================================================================================
+
+for(1, freq_bands + 1, { |n| n.postln });
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (control_structure
+    (for
+      (literal
+        (number
+          (integer)))
+      (binary_expression
+        (variable
+          (local_var
+            (identifier)))
+        (literal
+          (number
+            (integer))))
+      (function_block
+        (parameter_list
+          (pipe_parameter_list
+            (pipe_token)
+            (pipe_argument
+              (identifier))
+            (pipe_token)))
+        (function_call
+          (variable
+            (environment_var
+              (identifier)))
+          (method_call
+            (method_name)))))))

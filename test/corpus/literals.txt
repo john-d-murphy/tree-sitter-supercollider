@@ -7,19 +7,21 @@ Ref'd array
 )
 
 ---
+
 (source_file
   (code_block
-    (collection
-      (ref )
-      (literal
-        (number
-          (integer )))
-      (literal
-        (number
-          (integer )))
-      (literal
-        (number
-          (integer ))))))
+    (ref_expression
+      (ref)
+      (collection
+        (literal
+          (number
+            (integer)))
+        (literal
+          (number
+            (integer)))
+        (literal
+          (number
+            (integer)))))))
 
 ======
 Class name as expression
@@ -28,9 +30,10 @@ Class name as expression
 SinOsc;
 )
 ---
+
 (source_file
   (code_block
-    (class )))
+    (class)))
 
 ==================
 Empty symbol with single quotes
@@ -40,14 +43,14 @@ var sym = '';
 )
 
 ---
+
 (source_file
   (code_block
-    (variable_definition
-      name: (variable
-        (local_var
-          name: (identifier )))
-      value: (literal
-        (symbol )))))
+    (variable_definition_sequence
+      (var_binding
+        name: (identifier)
+        value: (literal
+          (symbol))))))
 
 ==================
 Empty symbol with single slash
@@ -57,14 +60,14 @@ var sym = \;
 )
 
 ---
+
 (source_file
   (code_block
-    (variable_definition
-      name: (variable
-        (local_var
-          name: (identifier )))
-      value: (literal
-        (symbol )))))
+    (variable_definition_sequence
+      (var_binding
+        name: (identifier)
+        value: (literal
+          (symbol))))))
 
 ==================
 string concat
@@ -73,13 +76,14 @@ string concat
 "hej" ++ "med dig";
 )
 ---
+
 (source_file
   (code_block
     (binary_expression
       left: (literal
-        (string ))
+        (string))
       right: (literal
-        (string )))))
+        (string)))))
 
 ==================
 (1..3pi)
@@ -88,15 +92,16 @@ string concat
 (1..3pi)
 )
 ---
+
 (source_file
   (code_block
     (collection
       (arithmetic_series
         (number
-          (integer ))
+          (integer))
         (number
-          (number
-            (integer )))))))
+          (pi_statement
+            (integer)))))))
 
 ==================
 2.0pi
@@ -105,12 +110,13 @@ string concat
 2.0pi
 )
 ---
+
 (source_file
   (code_block
     (literal
       (number
-        (number
-          (float ))))))
+        (pi_statement
+          (float))))))
 
 ==================
 2pi
@@ -119,12 +125,13 @@ string concat
 2pi
 )
 ---
+
 (source_file
   (code_block
     (literal
       (number
-        (number
-          (integer ))))))
+        (pi_statement
+          (integer))))))
 
 ==================
 single number
@@ -132,6 +139,7 @@ single number
 1;
 
 ---
+
 (source_file
   (literal
     (number
@@ -143,12 +151,12 @@ unary single number
 -1;
 
 ---
+
 (source_file
   (unary_expression
-    right:
-	(literal
-		(number
-        	(integer )))))
+    right: (literal
+      (number
+        (integer)))))
 
 ==================
 unary numbers in binary expression
@@ -156,31 +164,31 @@ unary numbers in binary expression
 -1 * -2;
 
 ---
+
 (source_file
   (binary_expression
     left: (unary_expression
       right: (literal
         (number
-          (integer ))))
+          (integer))))
     right: (unary_expression
       right: (literal
         (number
-          (integer ))))
-		  ))
+          (integer))))))
 
 ==================
 literal with method
 ==================
 10.5.round;
 ---
+
 (source_file
   (function_call
-    (receiver
-      (literal
-        (number
-          (float ))))
+    (literal
+      (number
+        (float)))
     (method_call
-      (method_name ))))
+      (method_name))))
 
 ==================
 literal number
@@ -195,64 +203,64 @@ var expUpperCase = 1E8;
 var expNegativePre = -1E8;
 
 ---
+
 (source_file
   (variable_definition
     (variable
-      (local_var
-        (identifier )))
+      (instance_var
+        (identifier)))
     (literal
       (number
-        (integer ))))
-(variable_definition
+        (integer))))
+  (variable_definition
     (variable
-      (local_var
-        (identifier )))
+      (instance_var
+        (identifier)))
     (literal
       (number
-        (float ))))
-(variable_definition
+        (float))))
+  (variable_definition
     (variable
-      (local_var
-        (identifier )))
+      (instance_var
+        (identifier)))
     (literal
       (number
-        (hexinteger ))))
-(variable_definition
+        (hexinteger))))
+  (variable_definition
     (variable
-      (local_var
-        (identifier )))
+      (instance_var
+        (identifier)))
     (literal
       (number
-        (exponential ))))
-(variable_definition
+        (exponential))))
+  (variable_definition
     (variable
-      (local_var
-        (identifier )))
+      (instance_var
+        (identifier)))
     (literal
       (number
-        (exponential ))))
-(variable_definition
+        (exponential))))
+  (variable_definition
     (variable
-      (local_var
-        (identifier )))
+      (instance_var
+        (identifier)))
     (literal
       (number
-        (exponential ))))
-(variable_definition
+        (exponential))))
+  (variable_definition
     (variable
-      (local_var
-        (identifier )))
+      (instance_var
+        (identifier)))
     (literal
       (number
-        (exponential ))))
-(variable_definition
+        (exponential))))
+  (variable_definition
     (variable
-      (local_var
-        (identifier )))
+      (instance_var
+        (identifier)))
     (literal
       (number
-        (exponential ))))
-	)
+        (exponential)))))
 
 ==================
 literal string
@@ -260,22 +268,23 @@ literal string
 var string = "hej med Dig !#)¤!¤AZ";
 
 ---
+
 (source_file
-  (variable_definition
-    (variable
-      (local_var
-        (identifier )))
-    (literal
-      (string ))))
+  (variable_definition_sequence
+    (var_binding
+      (identifier)
+      (literal
+        (string)))))
 
 ==================
 literal symbol with non alphabetic characters
 ==================
 'AUTHENTIC_SOUND_EFFECTS.vol1';
 ---
+
 (source_file
   (literal
-    (symbol )))
+    (symbol)))
 
 ==================
 literal symbol slashed
@@ -283,13 +292,14 @@ literal symbol slashed
 var sym = \averyLongSymbol;
 
 ---
+
 (source_file
-  (variable_definition
-    (variable
-      (local_var
-        (identifier )))
-    (literal
-        (symbol (identifier)))))
+  (variable_definition_sequence
+    (var_binding
+      (identifier)
+      (literal
+        (symbol
+          (identifier))))))
 
 ==================
 literal symbol single quoted
@@ -297,13 +307,13 @@ literal symbol single quoted
 var sym = 'averyLongSymbol';
 
 ---
+
 (source_file
-  (variable_definition
-    (variable
-      (local_var
-        (identifier )))
-    (literal
-        (symbol ))))
+  (variable_definition_sequence
+    (var_binding
+      (identifier)
+      (literal
+        (symbol)))))
 
 ==================
 literal char
@@ -311,13 +321,13 @@ literal char
 var charvar = $w;
 
 ---
+
 (source_file
-  (variable_definition
-    (variable
-      (local_var
-        (identifier )))
-    (literal
-        (char ))))
+  (variable_definition_sequence
+    (var_binding
+      (identifier)
+      (literal
+        (char)))))
 
 ==================
 literal bool
@@ -326,16 +336,65 @@ var boolean = true;
 var boolean2 = false;
 
 ---
+
 (source_file
   (variable_definition
     (variable
-      (local_var
-        (identifier )))
+      (instance_var
+        (identifier)))
     (literal
-        (bool )))
+      (bool)))
   (variable_definition
     (variable
-      (local_var
-        (identifier )))
+      (instance_var
+        (identifier)))
     (literal
-        (bool ))))
+      (bool))))
+
+====================
+Multi-line string
+====================
+(
+"line one
+line two
+line three"
+)
+---
+(source_file
+  (code_block
+    (literal
+      (string))))
+
+====================
+Multi-line string 2
+====================
+"line one
+line two
+line three"
+---
+(source_file
+  (literal
+    (string)))
+
+====================
+Multi-line string with code inside
+====================
+(
+f.write("some,comma,items
+and then, more items
+");
+)
+---
+(source_file
+  (code_block
+    (function_call
+      receiver: (variable
+        (environment_var
+          name: (identifier)))
+      (method_call
+        name: (method_name)
+        arguments: (parameter_call_list
+          (argument_calls
+            (unnamed_argument
+              (literal
+                (string)))))))))

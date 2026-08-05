@@ -1,0 +1,1267 @@
+// grammar.js
+const PRECEDENCE = {
+  comment: 1000,
+  pipe_params: 5,
+  association: 11,
+  associative_item: 10,
+  stringConcat: 16,
+  STRING: 2,
+  partial: 15,
+  call: 14,
+  field: 13,
+  unary: 15,
+  duplication: 12,
+  multiplicative: 10,
+  additive: 9,
+  shift: 8,
+  bitand: 7,
+  bitxor: 6,
+  bitor: 5,
+  comparative: 4,
+  and: 3,
+  or: 2,
+  range: 1,
+  indexing: 1,
+  assign: 0,
+  selectorBinary: 100,
+  controlstruct: 3,
+  localvar: 4,
+  vardef: 3,
+  vardef_sequence: 10,
+  closure: -1,
+  class_def: 1,
+  class: 20,
+  code_block: 20,
+};
+
+function sepBy1(sep, rule) {
+  return seq(rule, repeat(seq(sep, rule)));
+}
+
+function sepBy(sep, rule) {
+  return optional(sepBy1(sep, rule));
+}
+
+module.exports = grammar({
+  name: "supercollider",
+
+  // Ignore whitespace and comments
+  extras: $ => [/\s/, $.line_comment, $.block_comment],
+
+  externals: $ => [
+    $.block_comment,
+    $._space_separator,
+  ],
+
+  // The name of a token that will match keywords for the purpose of the keyword extraction optimization.
+  word: $ => $.identifier,
+
+  conflicts: $ => [
+    // [$.source_file, $._object],
+    // Base ambiguity: code_block is both an _expression and an _object.
+    [$._expression, $._object],
+
+    // Numeric vs literal vs object
+    [$.literal, $._numeric_expression],
+
+    // When function_call / number / variable overlap numeric atoms vs objects
+    [$._object, $._numeric_expression],
+
+    // function_call used as both _object and _indexable_object
+    // [$._object, $._indexable_object],
+
+    // duplication / if / calls
+    [$.duplicated_statement, $.function_call, $.if],
+    [$.function_call, $.binary_expression, $.if],
+    // internal repetition ambiguity in indexed_collection
+    // [$.indexed_collection],
+
+    // pi with optional coefficient (2pi, 0.5pi, etc.)
+    // [$.pi_statement, $.number],
+
+    // string can be both a literal and an indexable object
+    // [$.literal, $._indexable_object],
+
+    // block-style vs surrounding expression / nested switch
+    // [$.switch],
+
+    // [$.binary_expression, $.pipe_argument],
+    // Add this line:
+    [$._object, $._pipe_safe_expression],
+    [$._expression_statement, $._object],
+    [$.instance_var, $.var_binding],
+  ],
+
+  rules: {
+    //// Define the token explicitly so we can refer to it by ID
+    // source_file: $ =>
+    //  optional(
+    //    // Small precedence bump so this wins over low-precedence noise.
+    //    prec.left(1, $._expression_sequence),
+    //  ),
+
+    source_file: $ =>
+      optional(
+        seq(
+          // Zero or more semicolon-terminated expressions
+          repeat(seq($._expression, ";")),
+          // Optional final expression (no semicolon required)
+          optional($._expression),
+        ),
+      ),
+
+    _expression: $ =>
+      choice(
+        $.function_block,
+        $.class_def,
+        $._expression_statement,
+      ),
+
+    _expression_statement: $ =>
+      choice(
+        $.function_definition,
+        $._object,
+        $.variable_definition,
+        $.variable_definition_sequence,
+        $.return_statement,
+        $.control_structure,
+      ),
+
+    // These are the values that may be assigned to a variable or argument
+    _object: $ =>
+      choice(
+        prec(2, $.class),
+        $.function_call,
+        $.association,
+        $.nil_check,
+        $.event,
+        $.code_block,
+        $.function_block,
+        $.control_structure,
+        $.literal,
+        $.variable,
+        $.binary_expression,
+        $.unary_expression,
+        $.collection,
+        $.indexed_collection,
+        $.partial,
+        $.duplicated_statement,
+      ),
+
+    partial: $ => prec.right(PRECEDENCE.partial, "_"),
+
+    duplicated_statement: $ =>
+      prec.left(
+        PRECEDENCE.duplication,
+        seq(
+          field("duplicated_object", $._object),
+          field("operator", "!"),
+          field("duplication_times", $._object),
+        ),
+      ),
+
+    /////////////////
+    // 	Functions  //
+    /////////////////
+
+    function_definition: $ =>
+      prec.left(
+        1,
+        seq(
+          field("name", $.variable),
+          "=",
+          field("value", $.function_block),
+        ),
+      ),
+
+    apply_call: $ =>
+      prec.left(
+        PRECEDENCE.call,
+        seq(
+          ".",
+          "(",
+          optional(field("arguments", $.parameter_call_list)),
+          ")",
+        ),
+      ),
+
+    function_call: $ =>
+      prec.right(
+        PRECEDENCE.call,
+        choice(
+          // Free / namespaced calls, including Class(...) and ar(SinOsc, 110)
+          seq(
+            field("callee", choice(alias($.identifier, $.method_name), $.class)),
+            "(",
+            optional(field("arguments", $.parameter_call_list)),
+            ")",
+          ),
+          // Function call with trailing block (lowercase identifiers only)
+          seq(
+            field("callee", alias($.identifier, $.method_name)), // Remove $.class here
+            field("block", $.function_block),
+          ),
+          // Instance method (chainable)
+          seq(
+            field("receiver", $._object),
+            repeat1(
+              choice(
+                $.method_call,
+                $.instance_variable_setter_call,
+                $.apply_call,
+              ),
+            ),
+          ),
+        ),
+      ),
+
+    method_call: $ =>
+      prec.left(
+        seq(
+          ".",
+          field("name", alias($.identifier, $.method_name)),
+          // receiver.method(args...) or receiver.method { ... }
+          optional(
+            seq(
+              "(",
+              optional(field("arguments", $.parameter_call_list)),
+              ")",
+            ),
+          ),
+          optional(field("block", $.function_block)),
+        ),
+      ),
+
+    instance_variable_setter_call: $ =>
+      prec.left(
+        2,
+        seq(
+          ".",
+          field("name", optional(alias($.identifier, $.method_name))),
+          "_",
+          // Instance.method or Instance.method()
+          optional(seq("(", optional($.parameter_call_list), ")")),
+        ),
+      ),
+
+    // _expression_sequence: $ =>
+    //  seq(
+    //    // zero or more `expression;` pairs
+    //    repeat(prec.right(1, seq($._expression, ";"))),
+    //    // final expression (no `;` required)
+    //    $._expression,
+    //    // allow a trailing `;`
+    //    optional(";"),
+    //  ),
+
+    _expression_sequence: $ =>
+      seq(
+        repeat(
+          choice(
+            // variable_definition_sequence includes its own semicolon
+            $.variable_definition_sequence,
+            // Other expressions need semicolons added
+            prec.right(1, seq($._expression, ";")),
+          ),
+        ),
+        // Final expression (no semicolon)
+        $._expression,
+        optional(";"),
+      ),
+
+    _paren_expression_list: $ =>
+      seq(
+        $._expression,
+        ",",
+        sepBy1(",", $._expression),
+        optional(","),
+        optional(";"),
+      ),
+
+    code_block: $ =>
+      prec(
+        PRECEDENCE.code_block, // <- Use the precedence
+        seq(
+          "(",
+          optional(
+            choice(
+              // Prefer statement-style blocks when ambiguous
+              prec(2, $._expression_sequence),
+              $._paren_expression_list,
+            ),
+          ),
+          ")",
+        ),
+      ),
+
+    function_block: $ =>
+      seq(
+        "{",
+        // { |x, y| ... } or { arg x, y; ... }
+        optional(field("params", $.parameter_list)),
+        // body is a standard expression sequence; last expr may omit ;
+        optional(field("body", $._expression_sequence)),
+        "}",
+      ),
+
+    _function_content: $ =>
+      choice(
+        seq(
+          "{",
+          optional($.parameter_list),
+          optional($._expression_sequence),
+          "}",
+        ),
+        seq(
+          seq("(", "{"),
+          optional($.parameter_list),
+          optional($._expression_sequence),
+          seq(")", "}"),
+        ),
+      ),
+
+    // Definition of parameters in function
+    parameter_list: $ =>
+      choice(
+        seq(
+          "arg",
+          sepBy(",", $.argument),
+          optional(alias($.variable_argument, $.argument)),
+          ";",
+        ),
+        // 2. Pipe style (CHANGE THIS)
+        // Was: seq("|", sepBy(..., $.argument), "|")
+        // Now: Use the new rule we created!
+        $.pipe_parameter_list,
+      ),
+
+    // 2. Standard 'arg' declaration (e.g., "arg a = 1;")
+    argument: $ =>
+      seq(
+        field("name", $.identifier),
+        optional($.argument_default),
+      ),
+
+    argument_default: $ => seq("=", field("value", $._expression)),
+
+    // Safe expressions that cannot contain | as a binary operator
+    _pipe_safe_expression: $ =>
+      choice(
+        $.literal,
+        $.variable,
+        $.function_call,
+        $.function_block,
+        $.code_block,
+        $.collection,
+        $.indexed_collection,
+        $.partial,
+        $.duplicated_statement,
+        $.pipe_safe_unary_expression,
+        $.pipe_safe_nil_check,
+        $.association,
+        $.control_structure,
+        $.event,
+        prec(2, $.class),
+      ),
+
+    // Unary expressions that use safe expressions (no | binary op)
+    pipe_safe_unary_expression: $ => {
+      const table = [
+        [PRECEDENCE.unary, "-"],
+        [PRECEDENCE.unary, "*"],
+        [PRECEDENCE.unary, ":"],
+        [PRECEDENCE.unary, "!"],
+      ];
+
+      return choice(
+        ...table.map(([precedence, operator]) =>
+          prec.left(
+            precedence,
+            seq(
+              field("operator", operator),
+              field("right", $._pipe_safe_expression),
+            ),
+          )
+        ),
+      );
+    },
+
+    // Nil check that uses safe expressions (no | binary op)
+    pipe_safe_nil_check: $ =>
+      prec.left(
+        seq(
+          $._pipe_safe_expression,
+          choice("?", "!?", "??"),
+          $._pipe_safe_expression,
+        ),
+      ),
+
+    // Pipe argument uses restricted expressions
+    pipe_argument: $ =>
+      seq(
+        field("name", $.identifier),
+        field("value", optional(seq("=", $._pipe_safe_expression))),
+      ),
+
+    pipe_parameter_list: $ =>
+      seq(
+        $.pipe_token,
+        optional(
+          seq(
+            choice($.pipe_argument, alias($.variable_argument, $.argument)),
+            repeat(
+              seq(
+                optional(","), // comma optional between args
+                choice($.pipe_argument, alias($.variable_argument, $.argument)),
+              ),
+            ),
+          ),
+        ),
+        $.pipe_token,
+      ),
+
+    // see https://doc.sccode.org/Reference/Functions.html#Variable%20Arguments
+    variable_argument: $ => seq("...", field("name", $.identifier)),
+
+    // When supplying arguments to a function call
+    parameter_call_list: $ => prec.left(sepBy1(",", $.argument_calls)),
+
+    argument_calls: $ =>
+      choice(
+        $.named_argument,
+        $.unnamed_argument,
+      ),
+
+    // function call is added here to allow things like Array() in params
+    unnamed_argument: $ => $._object,
+
+    named_argument: $ =>
+      prec.left(
+        10,
+        field(
+          "name",
+          seq(
+            choice($.symbol, $.identifier),
+            seq(
+              choice("=", ":"),
+              $._object,
+            ),
+          ),
+        ),
+      ),
+
+    ///////////////////////
+    // 	Define literal	//
+    ///////////////////////
+
+    pi_statement: $ =>
+      choice(
+        "pi",
+        seq(
+          optional(choice($.integer, $.float, $.exponential)),
+          "pi",
+        ),
+      ),
+
+    number: $ =>
+      choice(
+        $.integer,
+        $.float,
+        $.hexinteger,
+        $.exponential,
+        $.pi_statement,
+      ),
+
+    literal: $ =>
+      choice(
+        $.number,
+        $.symbol,
+        $.char,
+        $.string,
+        $.bool,
+      ),
+
+    integer: $ => /\d+/,
+    hexinteger: $ => /0x([a-fA-F\d])+/,
+    float: $ => /\d+\.\d+/,
+    exponential: $ => /-?\d+(\.\d+)?[eE]-?\d+/,
+
+    symbol: $ =>
+      choice(
+        prec.left(
+          seq(
+            "\\",
+            optional(choice($.identifier, /[0-9]+/, $.escape_sequence)),
+          ),
+        ),
+        prec.left(
+          seq(
+            "'",
+            repeat(choice(
+              token.immediate(/[^'\\]+/), // chars except quote/backslash
+              token.immediate(seq("\\", /./)), // escape: backslash + any char
+            )),
+            "'",
+          ),
+        ),
+      ),
+
+    char: $ => /\$./,
+
+    string: $ =>
+      seq(
+        "\"",
+        repeat(
+          choice(
+            token.immediate(
+              prec(PRECEDENCE.STRING, /[^"\\\n]+|\\\r?\n/),
+            ),
+            $.escape_sequence,
+          ),
+        ),
+        "\"",
+      ),
+
+    bool: $ => choice("true", "false"),
+
+    escape_sequence: $ =>
+      token.immediate(
+        seq(
+          "\\",
+          choice(
+            /[^xu0-7]/,
+            /[0-7]{1,3}/,
+            /x[0-9a-fA-F]{2}/,
+            /u[0-9a-fA-F]{4}/,
+            /u\{[0-9a-fA-F]+\}/,
+          ),
+        ),
+      ),
+
+    /////////////////
+    // 	Variables  //
+    /////////////////
+
+    variable: $ =>
+      choice(
+        $.environment_var,
+        $.local_var,
+        $.classvar,
+        $.builtin_var,
+        $.instance_var,
+      ),
+
+    builtin_var: $ =>
+      field(
+        "name",
+        choice(
+          "inf",
+          "nil",
+          "thisFunction",
+          "thisFunctionDef",
+          "thisMethod",
+          "thisProcess",
+          "thisThread",
+          "currentEnvironment",
+          "topEnvironment",
+        ),
+      ),
+
+    local_var: $ =>
+      prec(
+        PRECEDENCE.localvar,
+        choice(
+          field("name", $.identifier),
+          // seq("var", field("name", $.identifier)),
+        ),
+      ),
+
+    instance_var: $ =>
+      seq(
+        optional("var"),
+        optional(choice("<", ">", "<>")),
+        field("name", $.identifier),
+      ),
+
+    classvar: $ =>
+      seq(
+        "classvar",
+        optional(choice("<", ">", "<>")),
+        field("name", $.identifier),
+      ),
+
+    const: $ =>
+      seq(
+        "const",
+        optional(choice("<", ">", "<>")),
+        field("name", $.identifier),
+      ),
+
+    environment_var: $ =>
+      choice(
+        field("name", alias(/[a-z]/, $.identifier)),
+        field("name", alias(seq("~", $.identifier), $.identifier)),
+      ),
+
+    variable_name: $ => $.identifier,
+
+    // helper: one name (with optional initializer) in a `var` list
+    var_binding: $ =>
+      seq(
+        field("name", $.identifier),
+        optional(
+          seq(
+            "=",
+            field("value", choice($.class, $._object)),
+          ),
+        ),
+      ),
+
+    variable_definition_sequence: $ =>
+      prec.left(
+        PRECEDENCE.vardef_sequence,
+        seq(
+          "var",
+          sepBy1(",", $.var_binding),
+          optional(","), // allow trailing comma
+          ";",
+        ),
+      ),
+
+    variable_definition: $ =>
+      prec(
+        PRECEDENCE.vardef,
+        seq(
+          field("name", $.variable),
+          "=",
+          field("value", choice($.class, $._object)),
+        ),
+      ),
+
+    ///////////////
+    // 	Classes  //
+    ///////////////
+
+    return_statement: $ => prec.left(PRECEDENCE.unary, seq("^", $._object)),
+
+    class_def: $ =>
+      prec(
+        PRECEDENCE.class_def,
+        seq(
+          optional("+"),
+          $.class,
+          optional(seq(":", alias($.class, $.parent_class))),
+          "{",
+          repeat(
+            choice(
+              // Variables
+              seq(
+                sepBy(
+                  ",",
+                  choice(
+                    // Variable declaration
+                    choice(
+                      alias($.local_var, $.instance_var),
+                      $.instance_var,
+                      $.classvar,
+                    ),
+                    // variable definiton
+                    seq(
+                      choice(
+                        alias($.local_var, $.instance_var),
+                        $.instance_var,
+                        $.classvar,
+                        $.const,
+                      ),
+                      "=",
+                      $._object,
+                    ),
+                  ),
+                ),
+                ";",
+              ),
+              // Instance method
+              seq(
+                alias($.identifier, $.instance_method_name),
+                $.function_block,
+              ),
+              // Class method
+              seq(
+                $.class_method_marker,
+                alias($.identifier, $.class_method_name),
+                $.function_block,
+              ),
+            ),
+          ),
+          "}",
+        ),
+      ),
+
+    ////////////////
+    // 	Comments  //
+    ////////////////
+
+    comment: $ =>
+      choice(
+        $.line_comment,
+        $.block_comment,
+      ),
+
+    line_comment: $ => prec(PRECEDENCE.comment, token(seq("//", /.*/))),
+
+    ///////////////////
+    // 	Collections  //
+    ///////////////////
+
+    ref: $ => "`",
+
+    event: $ =>
+      seq(
+        "(",
+        field("pairs", $._paired_associative_sequence),
+        ")",
+      ),
+
+    collection: $ =>
+      prec.left(
+        seq(
+          choice(
+            $.arithmetic_series,
+            prec.left(
+              seq(
+                optional(choice("#", $.ref)),
+                optional(
+                  choice(
+                    optional(alias($.class, $.collection_type)),
+                  ),
+                ),
+                "[",
+                $._collection_sequence,
+                "]",
+              ),
+            ),
+          ),
+        ),
+      ),
+
+    _collection_sequence: $ =>
+      seq(
+        prec.left(
+          sepBy1(
+            ",",
+            choice(
+              $.associative_item,
+              $._object,
+            ),
+          ),
+        ),
+        optional(","),
+      ),
+
+    _paired_associative_sequence: $ => seq(sepBy1(",", $.associative_item), optional(",")),
+
+    association: $ =>
+      prec(
+        PRECEDENCE.association,
+        seq(
+          field("key", prec.left($._object)),
+          field("operator", prec(PRECEDENCE.assign, "->")),
+          field("value", prec.right($._object)),
+        ),
+      ),
+
+    associative_item: $ =>
+      prec(
+        PRECEDENCE.associative_item,
+        choice(
+          // key: value
+          seq(
+            field("key", $.identifier),
+            ":",
+            field("value", alias($._object, $.item)),
+          ),
+          // keyObj -> valueObj
+          $.association,
+        ),
+      ),
+
+    _collection_types: $ =>
+      choice(
+        $._unordered_collection_types,
+        $._ordered_collection_types,
+      ),
+
+    _unordered_collection_types: $ =>
+      choice(
+        "Bag",
+        "Dictionary",
+        "Environment",
+        "Event",
+        "IdentityBag",
+        "IdentityDictionary",
+        "IdentitySet",
+        "LazyEnvir",
+        "MultiLevelIdentityDictionary",
+        "ObjectTable",
+        "Set",
+        "TwoWayIdentityDictionary",
+      ),
+
+    _ordered_collection_types: $ =>
+      choice(
+        "Array",
+        "Array2D",
+        "ArrayedCollection",
+        "DoubleArray",
+        "FloatArray",
+        "Int16Array",
+        "Int32Array",
+        "Int8Array",
+        "LinkedList",
+        "List",
+        "Order",
+        "OrderedIdentitySet",
+        "Pair",
+        "PriorityQueue",
+        "RawArray",
+        "SequenceableCollection",
+        "Signal",
+        "SortedList",
+        "SparseArray",
+        "String",
+        "SymbolArray",
+      ),
+
+    _indexable_object: $ =>
+      choice(
+        $.collection,
+        $.variable,
+        $.string,
+        $.function_call,
+        prec.left(1, $.code_block),
+        $.control_structure,
+      ),
+
+    indexed_collection: $ =>
+      seq(
+        $._indexable_object,
+        repeat($._index),
+        $._index,
+      ),
+
+    index_subrange: $ =>
+      choice(
+        seq($._numeric_expression, ".."),
+        seq("..", $._numeric_expression),
+        seq($._numeric_expression, "..", $._numeric_expression),
+        seq(
+          $._numeric_expression,
+          ",",
+          $._numeric_expression,
+          "..",
+          $._numeric_expression,
+        ),
+      ),
+
+    _index: $ =>
+      seq(
+        "[",
+        field(
+          "index",
+          choice(
+            $._numeric_expression,
+            $.index_subrange,
+            $.symbol,
+            $.string,
+          ),
+        ),
+        "]",
+      ),
+
+    arithmetic_series: $ =>
+      seq(
+        "(",
+        choice(
+          seq(
+            $._numeric_expression,
+            ",",
+            $._numeric_expression,
+            "..",
+            $._numeric_expression,
+          ),
+          seq("..", $._numeric_expression),
+          seq($._numeric_expression, "..", $._numeric_expression),
+        ),
+        ")",
+      ),
+
+    ///////////////////
+    // 	Expressions  //
+    ///////////////////
+
+    binary_expression: $ => {
+      const table = [
+        // "Selector as binary operator"
+        [
+          PRECEDENCE.selectorBinary,
+          alias(
+            /(r#)?[a-zA-Zα-ωΑ-Ωµ_][a-zA-Zα-ωΑ-Ωµ\d_]*:/,
+            $.method_name,
+          ),
+        ],
+
+        // "Regular" binary operators
+        [PRECEDENCE.and, "&&"],
+        [PRECEDENCE.or, "||"],
+        [PRECEDENCE.bitand, "&"],
+        [PRECEDENCE.bitor, prec.dynamic(-1, $.pipe_token)],
+        [
+          PRECEDENCE.comparative,
+          choice("==", "!=", "<", "<=", ">", ">="),
+        ],
+        [PRECEDENCE.shift, choice("<<", ">>")],
+        [PRECEDENCE.additive, choice("+", "-", "++")],
+        [
+          PRECEDENCE.multiplicative,
+          choice("*", "/", "%", prec.left("**")),
+        ],
+        [PRECEDENCE.assign, "="],
+
+        // String concatenation
+        [PRECEDENCE.stringConcat, "+/+"],
+
+        // Indexing operators (@, @@, etc.)
+        [PRECEDENCE.indexing, choice("@", "@@", "|@|", "@|@")],
+      ];
+
+      return choice(
+        ...table.map(([precedence, operator]) =>
+          prec.left(
+            precedence,
+            seq(
+              field("left", $._object),
+              field("operator", operator),
+              field("right", $._object),
+            ),
+          )
+        ),
+      );
+    },
+
+    unary_expression: $ => {
+      const table = [
+        [PRECEDENCE.unary, "-"],
+        [PRECEDENCE.unary, "*"],
+        // (:1..) style
+        [PRECEDENCE.unary, ":"],
+        [PRECEDENCE.unary, "!"],
+      ];
+
+      return choice(
+        ...table.map(([precedence, operator]) =>
+          prec.left(
+            precedence,
+            seq(
+              field("operator", operator),
+              field("right", $._object),
+            ),
+          )
+        ),
+      );
+    },
+
+    class: $ => prec(PRECEDENCE.class, field("name", /[A-Z]+[a-zA-Z\d_]*/)),
+
+    identifier: $ => /(r#)?[a-zA-Zα-ωΑ-Ωµ_][a-zA-Zα-ωΑ-Ωµ\d_]*/,
+
+    // Nil check
+    // @FIXME: Should be a binary operator
+    nil_check: $ =>
+      prec.left(
+        seq(
+          $._object,
+          choice("?", "!?", "??"),
+          $._object,
+        ),
+      ),
+
+    // Expressions that can hold or return a single value
+    _numeric_expression: $ =>
+      choice(
+        $.number,
+        $.variable,
+        $.binary_expression,
+        $.unary_expression,
+        $.function_call,
+        $.indexed_collection,
+        $.nil_check,
+      ),
+
+    ////////////////////
+    // 	Conditionals  //
+    ////////////////////
+
+    control_structure: $ =>
+      prec(
+        PRECEDENCE.controlstruct,
+        choice(
+          $.if,
+          $.while,
+          $.for,
+          $.forby,
+          $.case,
+          $.switch,
+        ),
+      ),
+
+    if: $ =>
+      choice(
+        // if (expr) trueFunc falseFunc
+        prec.dynamic(
+          1000, // <- VERY high dynamic precedence
+          prec.right(
+            100,
+            seq(
+              field("name", "if"),
+              "(",
+              field("expression", $._object),
+              ")",
+              field("true", $.function_block),
+              optional(field("false", $.function_block)),
+            ),
+          ),
+        ),
+        // if (expr, trueFunc, falseFunc);
+        prec.right(
+          seq(
+            field("name", "if"),
+            "(",
+            field("expression", $._object),
+            field("true", seq(",", $.function_block)),
+            optional(field("false", seq(",", $.function_block))),
+            ")",
+          ),
+        ),
+        // expr.if(...)
+        seq(
+          prec.left(
+            1,
+            seq(
+              field("expression", $._object),
+              field("name", seq(".", "if")),
+            ),
+          ),
+          choice(
+            // expr.if { truefunc }
+            field("true", $.function_block),
+            choice(
+              // expr.if({truefunc}) or expr.if{truefunc};
+              choice(
+                seq(field("true", $.function_block)),
+                seq("(", field("true", $.function_block), ")"),
+              ),
+              // expr.if({truefunc}, {falsefunc})
+              seq(
+                "(",
+                field("true", $.function_block),
+                optional(
+                  field("false", seq(",", $.function_block)),
+                ),
+                ")",
+              ),
+            ),
+          ),
+        ),
+      ),
+
+    while: $ =>
+      choice(
+        // while ( testFunc, bodyFunc );
+        prec.left(
+          1,
+          seq(
+            field("name", "while"),
+            "(",
+            field("test_func", $.function_block),
+            ",",
+            field("body_func", $.function_block),
+            ")",
+          ),
+        ),
+        // testFunc.while( bodyFunc );
+        seq(
+          field("expression", $._object),
+          field("name", ".while"),
+          field("body_func", $.function_block),
+        ),
+        // while testFunc bodyFunc;
+        seq(
+          field("name", "while"),
+          field("test_func", $.function_block),
+          field("body_func", $.function_block),
+        ),
+        // NEW: while (expr) { body }
+        prec.left(
+          1,
+          seq(
+            field("name", "while"),
+            "(",
+            field("expression", $._object),
+            ")",
+            field("body_func", $.function_block),
+          ),
+        ),
+      ),
+
+    for: $ =>
+      choice(
+        // for(start, end, func)
+        seq(
+          "for",
+          "(",
+          $.integer,
+          ",",
+          $.integer,
+          ",",
+          $.function_block,
+          ")",
+        ),
+        // for(start, end, step, func)
+        seq(
+          "for",
+          "(",
+          $.integer,
+          ",",
+          $.integer,
+          ",",
+          $._object,
+          ",",
+          $.function_block,
+          ")",
+        ),
+        // start.for(end, func)
+        seq(
+          $.integer,
+          ".for",
+          "(",
+          $.integer,
+          ",",
+          $.function_block,
+          ")",
+        ),
+        // start.for(end, step, func)
+        seq(
+          $.integer,
+          ".for",
+          "(",
+          $.integer,
+          ",",
+          $._object,
+          ",",
+          $.function_block,
+          ")",
+        ),
+      ),
+
+    forby: $ =>
+      choice(
+        // forBy ( startValue, endValue, stepValue, function );
+        seq(
+          field("name", "forBy"),
+          "(",
+          $.integer,
+          ",",
+          $.integer,
+          ",",
+          $.integer,
+          ",",
+          $.function_block,
+          ")",
+        ),
+        // startValue.forBy ( endValue, stepValue, function );
+        seq(
+          $.integer,
+          field("name", ".forBy"),
+          "(",
+          $.integer,
+          ",",
+          $.integer,
+          ",",
+          $.function_block,
+          ")",
+        ),
+      ),
+
+    case: $ =>
+      prec.left(
+        seq(
+          field("name", "case"),
+          repeat($.function_block),
+        ),
+      ),
+
+    // Restricted block used only for block-style `switch`:
+    // parses exactly `( <_object> )`
+    switch: $ =>
+      choice(
+        // 1) Comma-style switch:
+        //    switch (selector,
+        //        test1, { ... },
+        //        test2, { ... },
+        //        ...
+        //        defaultFunc // optional
+        //    );
+        seq(
+          field("name", "switch"),
+          "(",
+          field("selector", $._object),
+          ",",
+          field("test", $._object),
+          ",",
+          field("body", $.function_block),
+          repeat(
+            seq(
+              ",",
+              field("test", $._object),
+              ",",
+              field("body", $.function_block),
+            ),
+          ),
+          optional(
+            seq(
+              ",",
+              field("default", $.function_block),
+            ),
+          ),
+          ")",
+        ),
+        // 2) Block-style switch (no commas):
+        //    switch (z)
+        //        { 0 } { "zero".postln }
+        //        { 1 } { "one".postln }
+        //        { 2 } { "two".postln }
+        //        { "other".postln };
+        prec.right(
+          seq(
+            field("name", "switch"),
+            "(",
+            field("selector", $._object),
+            ")",
+            // One or more { test } { body } pairs
+            repeat1(
+              seq(
+                field("test", $.function_block),
+                field("body", $.function_block),
+              ),
+            ),
+            // Optional final default block with no preceding test:
+            optional(
+              field("default", $.function_block),
+            ),
+          ),
+        ),
+      ),
+    pipe_token: $ => "|",
+    class_method_marker: $ => token("*"),
+  },
+});
