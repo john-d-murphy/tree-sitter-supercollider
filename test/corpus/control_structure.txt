@@ -924,3 +924,58 @@ for(3, 7) { arg i; i.postln };
               (identifier)))
           (method_call
             (method_name)))))))
+
+================================================================================
+protect and try written as calls
+================================================================================
+
+protect({ a.value }, { b.value });
+try({ a.value }, { |error| error.postln });
+try(f);
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (control_structure
+    (protect
+      (function_block
+        (function_call
+          (variable
+            (environment_var
+              (identifier)))
+          (method_call
+            (method_name))))
+      (function_block
+        (function_call
+          (variable
+            (environment_var
+              (identifier)))
+          (method_call
+            (method_name))))))
+  (control_structure
+    (try
+      (function_block
+        (function_call
+          (variable
+            (environment_var
+              (identifier)))
+          (method_call
+            (method_name))))
+      (function_block
+        (parameter_list
+          (pipe_parameter_list
+            (pipe_token)
+            (pipe_argument
+              (identifier))
+            (pipe_token)))
+        (function_call
+          (variable
+            (local_var
+              (identifier)))
+          (method_call
+            (method_name))))))
+  (control_structure
+    (try
+      (variable
+        (environment_var
+          (identifier))))))

@@ -1495,22 +1495,42 @@ module.exports = grammar({
     // protect { normalCode } { onExitCode }
     // The onExit function is always called, even if normalCode throws
     protect: $ =>
-      prec.right(
+      choice(
+        prec.right(
+          seq(
+            "protect",
+            field("body", $.function_block),
+            optional(field("onExit", $.function_block)),
+          ),
+        ),
+        // protect(normalFunc, onExitFunc): the same, written as a call
         seq(
           "protect",
-          field("body", $.function_block),
-          optional(field("onExit", $.function_block)),
+          "(",
+          field("body", $._object),
+          optional(seq(",", field("onExit", $._object))),
+          ")",
         ),
       ),
 
     // try { code } { onErrorCode }
     // If code throws, onErrorCode is called with the error
     try: $ =>
-      prec.right(
+      choice(
+        prec.right(
+          seq(
+            "try",
+            field("body", $.function_block),
+            optional(field("onError", $.function_block)),
+          ),
+        ),
+        // try(func, onErrorFunc): the same, written as a call
         seq(
           "try",
-          field("body", $.function_block),
-          optional(field("onError", $.function_block)),
+          "(",
+          field("body", $._object),
+          optional(seq(",", field("onError", $._object))),
+          ")",
         ),
       ),
 
