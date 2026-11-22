@@ -9303,10 +9303,6 @@
     },
     {
       "type": "SYMBOL",
-      "name": "_space_separator"
-    },
-    {
-      "type": "SYMBOL",
       "name": "generator_arrow"
     },
     {

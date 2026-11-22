@@ -3,10 +3,8 @@
 #include <wctype.h>
 // Block comment stuff here is largely nicked from tree-sitter-rust https://github.com/tree-sitter/tree-sitter-rust
 
-enum TokenType { 
+enum TokenType {
   BLOCK_COMMENT,
-  // STRING,
-  SPACE_SEPARATOR,
   GENERATOR_ARROW,  // <- for list comprehensions
   EVENT_KEY,        // identifier: for event literals
   STRING_CONTENT,   // a string's text, up to its closing quote or a backslash
@@ -20,8 +18,6 @@ unsigned tree_sitter_supercollider_external_scanner_serialize(void *p, char *buf
 void tree_sitter_supercollider_external_scanner_deserialize(void *p, const char *b, unsigned n) {}
 
 static void advance(TSLexer *lexer) { lexer->advance(lexer, false); }
-
-static bool is_num_char(int32_t c) { return c == '_' || iswdigit(c); }
 
 static bool is_identifier_start(int32_t c) {
   return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
@@ -47,16 +43,6 @@ bool tree_sitter_supercollider_external_scanner_scan(
     }
     lexer->result_symbol = STRING_CONTENT;
     return any;
-  }
-
-  // space as separator in '{ |arg1 arg2| }' style argument declaration
-  if (valid_symbols[SPACE_SEPARATOR] && iswspace(lexer->lookahead)) {
-    while (iswspace(lexer->lookahead))
-      lexer->advance(lexer, true);
-    if (lexer->lookahead != '=' && lexer->lookahead != '|') {
-      lexer->result_symbol = SPACE_SEPARATOR;
-      return true;
-    }
   }
 
   while (iswspace(lexer->lookahead))

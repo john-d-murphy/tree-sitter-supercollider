@@ -209,7 +209,6 @@ module.exports = grammar({
 
   externals: $ => [
     $.block_comment,
-    $._space_separator,
     $.generator_arrow, // <- for list comprehensions, needs external scanner
     $.event_key, // identifier: for event literals
     $._string_content, // a string's text: no comment opens inside it
@@ -248,8 +247,6 @@ module.exports = grammar({
     // block-style vs surrounding expression / nested switch
     // [$.switch],
 
-    // [$.binary_expression, $.pipe_argument],
-    // Add this line:
     [$._object, $._pipe_safe_expression],
     [$._expression_statement, $._object],
     [$.instance_var, $.var_binding],
@@ -791,9 +788,6 @@ module.exports = grammar({
           optional(alias($.variable_argument, $.argument)),
           ";",
         ),
-        // 2. Pipe style (CHANGE THIS)
-        // Was: seq("|", sepBy(..., $.argument), "|")
-        // Now: Use the new rule we created!
         $.pipe_parameter_list,
       ),
 
