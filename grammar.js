@@ -135,10 +135,46 @@ function methodName($) {
     // expression can be)
     /[a-z]/,
     ...CONTROL_NAMES,
+    operatorName($),
+  );
+}
+
+// The value of an argument or of a list's element: `a; b; c` evaluates all
+// and is worth the last, and a semicolon may close it.
+function expressionSequence($) {
+  return seq($._object, repeat(seq(";", $._object)), optional(";"));
+}
+
+// `#[1, 2]`, `#Array[1, 2]`: an array made when the code is compiled.
+function literalArray($) {
+  return seq(
+    "#",
+    optional(alias($.class, $.collection_type)),
+    "[",
+    optional($._collection_sequence),
+    "]",
+  );
+}
+
+// The blocks that may follow a call, each a function or a list
+// comprehension and each one more argument to it (lang11d: blocklist1):
+// `f(a) { 1 } { 2 }`. The first is the field `block` or `comprehension`.
+function blockList($) {
+  return seq(
+    choice(
+      field("block", $.function_block),
+      field("comprehension", $.list_comprehension),
+    ),
+    repeat(choice($.function_block, $.list_comprehension)),
+  );
+}
+
+// An operator where a name is wanted: a method's name in a class, a callee
+// in parentheses. The ones listed are tokens of their own where an
+// expression or a function's arguments may begin.
+function operatorName($) {
+  return choice(
     $._operator,
-    // These operators are tokens of their own where an expression or a
-    // function's arguments may begin, as they may while a class definition
-    // and a call with a block are both being followed.
     "*",
     "-",
     "!",
@@ -147,12 +183,6 @@ function methodName($) {
     ">",
     "<>",
   );
-}
-
-// The value of an argument or of a list's element: `a; b; c` evaluates all
-// and is worth the last, and a semicolon may close it.
-function expressionSequence($) {
-  return seq($._object, repeat(seq(";", $._object)), optional(";"));
 }
 
 function sepBy1(sep, rule) {
@@ -260,6 +290,9 @@ module.exports = grammar({
     source_file: $ =>
       optional(
         seq(
+          // Interpreted code is the body of a function, and may open with
+          // that function's arguments: `arg a; a + 1` (lang11d: cmdlinecode)
+          optional(field("params", $.parameter_list)),
           repeat(
             choice(
               // A semicolon-terminated expression
@@ -350,8 +383,13 @@ module.exports = grammar({
     //   colon; it is still the one token that opens a comprehension)
     list_comprehension: $ =>
       seq(
-        alias(token(seq("{", /\s*/, ":")), "{:"),
-        field("body", $._object),
+        choice(
+          alias(token(seq("{", /\s*/, ":")), "{:"),
+          // `{; x, x <- y }`: the same, opened with a semicolon (lang11d:
+          // generator)
+          alias(token(seq("{", /\s*/, ";")), "{;"),
+        ),
+        field("body", expressionSequence($)),
         ",",
         sepBy1(",", $._comprehension_clause),
         "}",
@@ -375,6 +413,10 @@ module.exports = grammar({
         100,
         seq(
           field("name", $._object),
+          // a second name: `{: x, x z <- y }` (lang11d: qual)
+          optional(
+            field("name", choice($.identifier, alias(/[a-z]/, $.identifier))),
+          ),
           $.generator_arrow,
           field("collection", $._object),
         ),
@@ -397,7 +439,8 @@ module.exports = grammar({
       prec(
         2,
         seq(
-          "::",
+          // two colons, which may stand apart: `: : x.postln`
+          alias(token(seq(":", /\s*/, ":")), "::"),
           field("effect", $._object),
         ),
       ),
@@ -407,7 +450,8 @@ module.exports = grammar({
       prec(
         2,
         seq(
-          ":while",
+          // a colon and the name, which may stand apart: `: while x < 3`
+          alias(token(seq(":", /\s*/, "while")), ":while"),
           field("condition", $._object),
         ),
       ),
@@ -448,6 +492,7 @@ module.exports = grammar({
           "(",
           optional(field("arguments", $.parameter_call_list)),
           ")",
+          optional(blockList($)),
         ),
       ),
 
@@ -470,15 +515,10 @@ module.exports = grammar({
             "(",
             optional(field("arguments", $.parameter_call_list)),
             ")",
-            optional(
-              choice(
-                field("block", $.function_block),
-                field("comprehension", $.list_comprehension),
-              ),
-            ),
+            optional(blockList($)),
           ),
-          // Function call with trailing block: fork { }, Routine { }, Task { },
-          // and `r { }`
+          // Function call with trailing blocks: fork { }, Routine { }, Task { },
+          // `r { }`, all {: x, x <- (1..10) }
           seq(
             field(
               "callee",
@@ -488,30 +528,33 @@ module.exports = grammar({
                 $.class,
               ),
             ),
-            field("block", $.function_block),
-          ),
-          // Function call with trailing list comprehension: all {: x, x <- (1..10) }
-          seq(
-            field(
-              "callee",
-              choice(
-                alias($.identifier, $.method_name),
-                alias(/[a-z]/, $.method_name),
-              ),
-            ),
-            field("comprehension", $.list_comprehension),
+            blockList($),
           ),
           // Parenthesized binary operator as callee: (+++)(a, 99, _)
-          // sclang lang11d msgsend: '(' binop2 ')' '(' arglist ')'.
+          // sclang lang11d msgsend: '(' binop2 ')' '(' arglist ')' blocklist
+          // and '(' binop2 ')' blocklist1.
           // Exists to pass an operator's adverb dynamically — infix adverbs
           // (a +++.1 b) are compile-time literals. See Syntax-Shortcuts.
           seq(
             "(",
-            field("callee", alias($._operator, $.method_name)),
+            field(
+              "callee",
+              alias(
+                // an operator, or a name with its colon: `(foo:)(1, 2)`
+                choice(operatorName($), $.event_key),
+                $.method_name,
+              ),
+            ),
             ")",
-            "(",
-            optional(field("arguments", $.parameter_call_list)),
-            ")",
+            choice(
+              seq(
+                "(",
+                optional(field("arguments", $.parameter_call_list)),
+                ")",
+                optional(blockList($)),
+              ),
+              blockList($),
+            ),
           ),
           // Instance method (chainable)
           seq(
@@ -521,6 +564,8 @@ module.exports = grammar({
                 $.method_call,
                 $.instance_variable_setter_call,
                 $.apply_call,
+                // receiver.[index]: an index written as a message
+                seq(".", $._index),
               ),
             ),
           ),
@@ -553,14 +598,22 @@ module.exports = grammar({
           // Optional trailing block(s): .if{ true } or .if{ true }{ false }
           // A trailing list comprehension is also a function argument:
           // d.keyDownAction.addFunc {:x, x<-(1..), :: "...".postf(x) }
+          // Any number may follow, of either kind (lang11d: blocklist).
           optional(
-            choice(
-              seq(
+            seq(
+              choice(
                 field("block", $.function_block),
-                // Second trailing block only valid when first is present
-                optional(field("else_block", $.function_block)),
+                field("comprehension", $.list_comprehension),
               ),
-              field("comprehension", $.list_comprehension),
+              optional(
+                seq(
+                  choice(
+                    field("else_block", $.function_block),
+                    $.list_comprehension,
+                  ),
+                  repeat(choice($.function_block, $.list_comprehension)),
+                ),
+              ),
             ),
           ),
         ),
@@ -633,6 +686,12 @@ module.exports = grammar({
               prec.dynamic(100, field("pairs", $._paired_associative_sequence)),
               // Prefer statement-style blocks when ambiguous
               prec(2, $._expression_sequence),
+              // Interpreted code that is all in parentheses may open with
+              // arguments there: `(arg a; a + 1)` (lang11d: cmdlinecode)
+              seq(
+                field("params", $.parameter_list),
+                optional($._expression_sequence),
+              ),
               $._paren_expression_list,
             ),
           ),
@@ -766,9 +825,12 @@ module.exports = grammar({
               // the older `name(value)`
               seq("(", $._expression, ")"),
               // before a literal or its negative the equals sign may be
-              // left out: `|start = 0, range -1|`
+              // left out: `|start = 0, range -1|`. nil, inf and a literal
+              // array are literals here as well.
               $.literal,
               $.pipe_safe_unary_expression,
+              alias(alias(choice("nil", "inf"), $.builtin_var), $.variable),
+              alias(literalArray($), $.collection),
             ),
           ),
         ),
@@ -905,7 +967,9 @@ module.exports = grammar({
         ),
       ),
 
-    char: $ => /\$(\\.|.)/,
+    // The character is whatever follows the dollar sign, a line break too;
+    // after a backslash, whatever follows that.
+    char: $ => /\$(\\[\s\S]|[^\\])/,
 
     // Strings that stand side by side are one string to sclang:
     // "one part, " "and the rest".
@@ -1013,9 +1077,13 @@ module.exports = grammar({
       seq(
         field("name", name($)),
         optional(
-          seq(
-            "=",
-            field("value", choice($.class, $._object)),
+          choice(
+            seq(
+              "=",
+              field("value", choice($.class, $._object)),
+            ),
+            // the older `name(value)`
+            seq("(", field("value", expressionSequence($)), ")"),
           ),
         ),
       ),
@@ -1105,11 +1173,26 @@ module.exports = grammar({
                         alias($.local_var, $.instance_var),
                         $.instance_var,
                         $.classvar,
-                        $.const,
                       ),
                       "=",
                       $._object,
                     ),
+                  ),
+                ),
+                ";",
+              ),
+              // Constants: each has a value, and the comma between two may
+              // be left out (lang11d: constdeflist optcomma constdef).
+              seq(
+                $.const,
+                "=",
+                $._object,
+                repeat(
+                  seq(
+                    optional(","),
+                    choice(alias($.local_var, $.instance_var), $.instance_var),
+                    "=",
+                    $._object,
                   ),
                 ),
                 ";",
@@ -1170,7 +1253,18 @@ module.exports = grammar({
             $.variable,
             $.collection,
             $.function_call,
-            seq("(", $._object, ")"),
+            seq("(", expressionSequence($), ")"),
+            // `` `(a: 1) ``, `` `{ 1 } ``, `` `a[0] ``, `` ``a ``, `` `-1 ``,
+            // `` `Object ``: sclang takes any expression here (lang11d:
+            // '`' expr).
+            $.event,
+            $.function_block,
+            $.list_comprehension,
+            $.indexed_collection,
+            $.ref_expression,
+            $.unary_expression,
+            $.class,
+            $.partial,
           ),
         ),
       ),
@@ -1351,6 +1445,10 @@ module.exports = grammar({
         $.function_call,
         prec.left(1, $.code_block),
         $.control_structure,
+        // `(a: 1)[\a]`, `{ 1 }[0]`, `{: x, x <- y }[0]`
+        $.event,
+        $.function_block,
+        $.list_comprehension,
       ),
 
     indexed_collection: $ =>
@@ -1399,8 +1497,9 @@ module.exports = grammar({
         field(
           "index",
           choice(
-            // One index, or several: a[2, 3] for multi-dimensional arrays
-            sepBy1(",", item),
+            // One index, or several: a[2, 3] for multi-dimensional arrays.
+            // Each is a sequence of expressions: a[b; c]
+            sepBy1(",", seq(item, repeat(seq(";", item)), optional(";"))),
             $.index_subrange,
           ),
         ),
@@ -1420,8 +1519,8 @@ module.exports = grammar({
             "..",
             $._numeric_expression,
           ),
-          // (.. end) - from beginning to end
-          seq("..", $._numeric_expression),
+          // (.. end) - from beginning to end; (:.. end), the same as a stream
+          seq(optional(":"), "..", $._numeric_expression),
           // (start .. end) - simple range
           seq($._numeric_expression, "..", $._numeric_expression),
           // (start ..) - open-ended range (infinite series)
