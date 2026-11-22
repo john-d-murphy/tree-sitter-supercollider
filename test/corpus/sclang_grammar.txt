@@ -179,3 +179,120 @@ a foo:.x b;
     (variable
       (environment_var
         (identifier)))))
+
+==================
+A key with its colon apart from it is an expression
+==================
+(a : 1, a + 1: 2, a.b : 3);
+[a : 1, b: 2];
+(Object : 1);
+---
+
+(source_file
+  (event
+    (associative_item
+      (variable
+        (environment_var
+          (identifier)))
+      (item
+        (literal
+          (number
+            (integer)))))
+    (associative_item
+      (binary_expression
+        (variable
+          (environment_var
+            (identifier)))
+        (literal
+          (number
+            (integer))))
+      (item
+        (literal
+          (number
+            (integer)))))
+    (associative_item
+      (function_call
+        (variable
+          (environment_var
+            (identifier)))
+        (method_call
+          (method_name)))
+      (item
+        (literal
+          (number
+            (integer))))))
+  (collection
+    (associative_item
+      (variable
+        (environment_var
+          (identifier)))
+      (item
+        (literal
+          (number
+            (integer)))))
+    (associative_item
+      (event_key)
+      (item
+        (literal
+          (number
+            (integer))))))
+  (event
+    (associative_item
+      (class)
+      (item
+        (literal
+          (number
+            (integer)))))))
+
+==================
+A key or a value may be a sequence of expressions
+==================
+(a; b : 2; 3);
+(a: 1; 2);
+[1; 2: 3; 4];
+---
+
+(source_file
+  (event
+    (associative_item
+      (variable
+        (environment_var
+          (identifier)))
+      (variable
+        (environment_var
+          (identifier)))
+      (item
+        (literal
+          (number
+            (integer))))
+      (item
+        (literal
+          (number
+            (integer))))))
+  (event
+    (associative_item
+      (event_key)
+      (item
+        (literal
+          (number
+            (integer))))
+      (item
+        (literal
+          (number
+            (integer))))))
+  (collection
+    (associative_item
+      (literal
+        (number
+          (integer)))
+      (literal
+        (number
+          (integer)))
+      (item
+        (literal
+          (number
+            (integer))))
+      (item
+        (literal
+          (number
+            (integer)))))))

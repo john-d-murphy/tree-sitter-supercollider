@@ -46,22 +46,18 @@ bool tree_sitter_supercollider_external_scanner_scan(
   while (iswspace(lexer->lookahead))
     lexer->advance(lexer, true);
 
-  // Event key: identifier followed by colon (e.g., "freq:" or "amp :")
-  // Allows optional whitespace between identifier and colon
-  // This must be checked when EVENT_KEY is valid to distinguish from unary :
+  // Event key: an identifier with its colon directly after it (`freq:`),
+  // which is one token to sclang (KEYBINOP) and names a symbol. With a blank
+  // between them (`freq : 1`) the name is a variable and the colon stands
+  // alone, so that is not one of these.
   if (valid_symbols[EVENT_KEY] && is_identifier_start(lexer->lookahead)) {
     lexer->mark_end(lexer);
-    
+
     // Consume the identifier
     while (is_identifier_char(lexer->lookahead)) {
       advance(lexer);
     }
-    
-    // Skip optional whitespace before colon (space/tab only, not newline)
-    while (lexer->lookahead == ' ' || lexer->lookahead == '\t') {
-      advance(lexer);
-    }
-    
+
     // Check for colon
     if (lexer->lookahead == ':') {
       advance(lexer);

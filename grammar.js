@@ -243,6 +243,10 @@ module.exports = grammar({
 
     // expr.if(func, func) vs expr.if(obj, obj)
     [$._object, $.if],
+
+    // `(a; b)` is statements and `(a; b : c)` a dictionary keyed by an
+    // expression: which it is shows only at the colon.
+    [$._expression_statement, $.associative_item],
   ],
 
   rules: {
@@ -1238,37 +1242,50 @@ module.exports = grammar({
       ),
 
     associative_item: $ =>
-      prec.dynamic(
-        50, // High dynamic precedence to win over unary : interpretation
-        prec(
-          PRECEDENCE.associative_item,
-          choice(
-            // key: value using event_key token (identifier immediately followed by :)
-            seq(
-              field("key", $.event_key),
-              field("value", alias($._object, $.item)),
+      choice(
+        prec.dynamic(
+          50, // High dynamic precedence to win over unary : interpretation
+          prec(
+            PRECEDENCE.associative_item,
+            choice(
+              // key: value, the key a name with its colon directly after it
+              // (sclang's KEYBINOP): the key is the symbol of that name.
+              seq(
+                field("key", $.event_key),
+                field("value", alias(expressionSequence($), $.item)),
+              ),
+              // symbol key: \key: value
+              seq(
+                field("key", $.symbol),
+                ":",
+                field("value", alias(expressionSequence($), $.item)),
+              ),
+              // string key: "key": value
+              seq(
+                field("key", $.string),
+                ":",
+                field("value", alias(expressionSequence($), $.item)),
+              ),
+              // number key: 0: value, 1: value (for Prewrite patterns etc)
+              seq(
+                field("key", $.number),
+                ":",
+                field("value", alias(expressionSequence($), $.item)),
+              ),
+              // keyObj -> valueObj
+              $.association,
             ),
-            // symbol key: \key: value
-            seq(
-              field("key", $.symbol),
-              ":",
-              field("value", alias($._object, $.item)),
-            ),
-            // string key: "key": value
-            seq(
-              field("key", $.string),
-              ":",
-              field("value", alias($._object, $.item)),
-            ),
-            // number key: 0: value, 1: value (for Prewrite patterns etc)
-            seq(
-              field("key", $.number),
-              ":",
-              field("value", alias($._object, $.item)),
-            ),
-            // keyObj -> valueObj
-            $.association,
           ),
+        ),
+        // Any other expression as the key, its colon apart from it:
+        // `(a : 1)` is keyed by the value of the variable a, where `(a: 1)`
+        // is keyed by the symbol \a. No precedence: whether `(a; b` goes on
+        // as statements or as a key shows only at the colon, so both are
+        // followed (see the conflicts).
+        seq(
+          field("key", expressionSequence($)),
+          ":",
+          field("value", alias(expressionSequence($), $.item)),
         ),
       ),
 

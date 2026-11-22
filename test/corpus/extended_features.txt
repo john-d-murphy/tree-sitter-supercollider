@@ -30,13 +30,17 @@ Event literal with space before colon
 (source_file
   (event
     pairs: (associative_item
-      key: (event_key)
+      key: (variable
+        (local_var
+          name: (identifier)))
       value: (item
         (literal
           (number
             (integer)))))
     pairs: (associative_item
-      key: (event_key)
+      key: (variable
+        (local_var
+          name: (identifier)))
       value: (item
         (literal
           (number
@@ -74,13 +78,17 @@ Event literal with spaces around colon
 (source_file
   (event
     pairs: (associative_item
-      key: (event_key)
+      key: (variable
+        (local_var
+          name: (identifier)))
       value: (item
         (literal
           (number
             (integer)))))
     pairs: (associative_item
-      key: (event_key)
+      key: (variable
+        (local_var
+          name: (identifier)))
       value: (item
         (literal
           (number
