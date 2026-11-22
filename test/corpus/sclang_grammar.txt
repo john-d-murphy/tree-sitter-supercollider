@@ -1124,3 +1124,39 @@ A part of a series is a sequence of expressions
       (variable
         (environment_var
           (identifier))))))
+
+==================
+A string or a symbol that begins as a comment does
+==================
+"/* no comment";
+'/*';
+"// no comment";
+"a" /* a comment */ "b";
+---
+
+(source_file
+  (literal
+    (string))
+  (literal
+    (symbol))
+  (literal
+    (string))
+  (literal
+    (string
+      (block_comment))))
+
+==================
+A backslash takes whatever follows it
+==================
+"\x \8 \u12";
+'\x';
+---
+
+(source_file
+  (literal
+    (string
+      (escape_sequence)
+      (escape_sequence)
+      (escape_sequence)))
+  (literal
+    (symbol)))

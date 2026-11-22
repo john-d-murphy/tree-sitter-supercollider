@@ -8,7 +8,9 @@ enum TokenType {
   // STRING,
   SPACE_SEPARATOR,
   GENERATOR_ARROW,  // <- for list comprehensions
-  EVENT_KEY         // identifier: for event literals
+  EVENT_KEY,        // identifier: for event literals
+  STRING_CONTENT,   // a string's text, up to its closing quote or a backslash
+  ERROR_SENTINEL    // never produced: valid only while an error is recovered
 };
 
 void *tree_sitter_supercollider_external_scanner_create() { return NULL; }
@@ -32,6 +34,20 @@ static bool is_identifier_char(int32_t c) {
 
 bool tree_sitter_supercollider_external_scanner_scan(
   void *payload, TSLexer *lexer, const bool *valid_symbols) {
+
+  // Inside a string all there is, up to the closing quote or a backslash, is
+  // its text: blanks are not skipped, and `/*` opens no comment. While
+  // tree-sitter recovers from an error it offers every token at once, the
+  // sentinel too, and then this is not to be believed.
+  if (valid_symbols[STRING_CONTENT] && !valid_symbols[ERROR_SENTINEL]) {
+    bool any = false;
+    while (lexer->lookahead != '"' && lexer->lookahead != '\\' && !lexer->eof(lexer)) {
+      advance(lexer);
+      any = true;
+    }
+    lexer->result_symbol = STRING_CONTENT;
+    return any;
+  }
 
   // space as separator in '{ |arg1 arg2| }' style argument declaration
   if (valid_symbols[SPACE_SEPARATOR] && iswspace(lexer->lookahead)) {

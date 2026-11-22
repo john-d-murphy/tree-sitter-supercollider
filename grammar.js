@@ -64,7 +64,6 @@ const PRECEDENCE = {
   association: 11,
   associative_item: 10,
   stringConcat: 16,
-  STRING: 2,
   partial: 15,
   call: 14,
   field: 13,
@@ -213,6 +212,8 @@ module.exports = grammar({
     $._space_separator,
     $.generator_arrow, // <- for list comprehensions, needs external scanner
     $.event_key, // identifier: for event literals
+    $._string_content, // a string's text: no comment opens inside it
+    $._error_sentinel, // never used: valid only while an error is recovered
   ],
 
   // The name of a token that will match keywords for the purpose of the keyword extraction optimization.
@@ -1013,16 +1014,10 @@ module.exports = grammar({
             ),
           ),
         ),
-        prec.left(
-          seq(
-            "'",
-            repeat(choice(
-              token.immediate(/[^'\\]+/), // chars except quote/backslash
-              token.immediate(seq("\\", /./)), // escape: backslash + any char
-            )),
-            "'",
-          ),
-        ),
+        // One token from quote to quote, so that nothing inside it is read
+        // as anything else: `'/*'` holds no comment. A backslash takes the
+        // character after it, whatever that is.
+        token(seq("'", repeat(choice(/[^'\\]/, /\\[\s\S]/)), "'")),
       ),
 
     // The character is whatever follows the dollar sign, a line break too;
@@ -1036,32 +1031,17 @@ module.exports = grammar({
     _string_part: $ =>
       seq(
         "\"",
-        repeat(
-          choice(
-            token.immediate(
-              prec(PRECEDENCE.STRING, /[^"\\]+/),
-            ),
-            $.escape_sequence,
-          ),
-        ),
+        // The text is the scanner's to read: it alone can tell that the
+        // `/*` of "/* not a comment" opens nothing.
+        repeat(choice($._string_content, $.escape_sequence)),
         "\"",
       ),
 
     bool: $ => choice("true", "false"),
 
-    escape_sequence: $ =>
-      token.immediate(
-        seq(
-          "\\",
-          choice(
-            /[^xu0-7]/,
-            /[0-7]{1,3}/,
-            /x[0-9a-fA-F]{2}/,
-            /u[0-9a-fA-F]{4}/,
-            /u\{[0-9a-fA-F]+\}/,
-          ),
-        ),
-      ),
+    // A backslash takes the character after it, whatever that is: sclang
+    // knows \n, \r, \t, \f and \v, and any other stands for itself.
+    escape_sequence: $ => token.immediate(/\\[\s\S]/),
 
     /////////////////
     // 	Variables  //
