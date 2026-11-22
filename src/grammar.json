@@ -3844,8 +3844,8 @@
                                 "value": "!"
                               },
                               {
-                                "type": "STRING",
-                                "value": "|"
+                                "type": "SYMBOL",
+                                "name": "pipe_token"
                               },
                               {
                                 "type": "STRING",
@@ -3948,8 +3948,8 @@
                                 "value": "!"
                               },
                               {
-                                "type": "STRING",
-                                "value": "|"
+                                "type": "SYMBOL",
+                                "name": "pipe_token"
                               },
                               {
                                 "type": "STRING",

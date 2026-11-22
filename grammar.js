@@ -134,7 +134,7 @@ function methodName($) {
     "*",
     "-",
     "!",
-    "|",
+    $.pipe_token,
     "<",
     ">",
     "<>",
