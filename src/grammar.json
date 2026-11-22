@@ -2966,8 +2966,21 @@
                     {
                       "type": "ALIAS",
                       "content": {
-                        "type": "SYMBOL",
-                        "name": "identifier"
+                        "type": "CHOICE",
+                        "members": [
+                          {
+                            "type": "SYMBOL",
+                            "name": "identifier"
+                          },
+                          {
+                            "type": "SYMBOL",
+                            "name": "_operator_method_name"
+                          },
+                          {
+                            "type": "SYMBOL",
+                            "name": "class_method_marker"
+                          }
+                        ]
                       },
                       "named": true,
                       "value": "instance_method_name"
@@ -6191,6 +6204,10 @@
         "type": "STRING",
         "value": "*"
       }
+    },
+    "_operator_method_name": {
+      "type": "PATTERN",
+      "value": "[!@%&*\\-+=|<>?\\/]+"
     }
   },
   "extras": [

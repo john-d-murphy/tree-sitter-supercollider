@@ -153,3 +153,103 @@ Foo.new.a.postln;
         (method_name)))
     (method_call
       (method_name))))
+
+================================================================================
+Methods named by binary operators
+================================================================================
+
+Foo {
+    == { |other| ^other.name == name }
+    + { |other| ^this.add(other) }
+    * { |n| ^this.scale(n) }
+    *new { ^super.new }
+    <= { |x| ^true }
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (class_def
+    (class)
+    (instance_method_name)
+    (function_block
+      (parameter_list
+        (pipe_parameter_list
+          (pipe_token)
+          (pipe_argument
+            (identifier))
+          (pipe_token)))
+      (return_statement
+        (binary_expression
+          (function_call
+            (variable
+              (local_var
+                (identifier)))
+            (method_call
+              (method_name)))
+          (variable
+            (local_var
+              (identifier))))))
+    (instance_method_name)
+    (function_block
+      (parameter_list
+        (pipe_parameter_list
+          (pipe_token)
+          (pipe_argument
+            (identifier))
+          (pipe_token)))
+      (return_statement
+        (function_call
+          (variable
+            (local_var
+              (identifier)))
+          (method_call
+            (method_name)
+            (parameter_call_list
+              (argument_calls
+                (unnamed_argument
+                  (variable
+                    (local_var
+                      (identifier))))))))))
+    (instance_method_name)
+    (function_block
+      (parameter_list
+        (pipe_parameter_list
+          (pipe_token)
+          (pipe_argument
+            (identifier))
+          (pipe_token)))
+      (return_statement
+        (function_call
+          (variable
+            (local_var
+              (identifier)))
+          (method_call
+            (method_name)
+            (parameter_call_list
+              (argument_calls
+                (unnamed_argument
+                  (variable
+                    (environment_var
+                      (identifier))))))))))
+    (class_method_marker)
+    (class_method_name)
+    (function_block
+      (return_statement
+        (function_call
+          (variable
+            (local_var
+              (identifier)))
+          (method_call
+            (method_name)))))
+    (instance_method_name)
+    (function_block
+      (parameter_list
+        (pipe_parameter_list
+          (pipe_token)
+          (pipe_argument
+            (identifier))
+          (pipe_token)))
+      (return_statement
+        (literal
+          (bool))))))

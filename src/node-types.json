@@ -3065,6 +3065,11 @@
     }
   },
   {
+    "type": "instance_method_name",
+    "named": true,
+    "fields": {}
+  },
+  {
     "type": "instance_var",
     "named": true,
     "fields": {
@@ -5384,10 +5389,6 @@
   {
     "type": "inf",
     "named": false
-  },
-  {
-    "type": "instance_method_name",
-    "named": true
   },
   {
     "type": "integer",

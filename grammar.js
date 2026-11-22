@@ -950,9 +950,15 @@ module.exports = grammar({
                 ),
                 ";",
               ),
-              // Instance method
+              // Instance method. Its name is an identifier or, for a binary
+              // operator's method (`== { |other| ... }`), the operator. A lone
+              // `*` is the same token as the class method marker; what follows
+              // (a block, or a name) says which it is.
               seq(
-                alias($.identifier, $.instance_method_name),
+                alias(
+                  choice($.identifier, $._operator_method_name, $.class_method_marker),
+                  $.instance_method_name,
+                ),
                 $.function_block,
               ),
               // Class method
@@ -1683,5 +1689,8 @@ module.exports = grammar({
     pipe_token: $ => "|",
     // generator_arrow is defined in externals, handled by src/scanner.c
     class_method_marker: $ => token("*"),
+
+    // The name of a binary operator's method: any run of operator characters.
+    _operator_method_name: $ => /[!@%&*\-+=|<>?\/]+/,
   },
 });
