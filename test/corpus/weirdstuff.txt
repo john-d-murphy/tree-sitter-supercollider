@@ -181,3 +181,48 @@ a + _;
         (environment_var
           name: (identifier)))
       right: (partial))))
+
+================================================================================
+partial: _[0]
+================================================================================
+
+x = settings.collect(_[0]);
+y = lines.collect(_[1]);
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (variable_definition
+    (variable
+      (environment_var
+        (identifier)))
+    (function_call
+      (variable
+        (local_var
+          (identifier)))
+      (method_call
+        (method_name)
+        (parameter_call_list
+          (argument_calls
+            (unnamed_argument
+              (indexed_collection
+                (partial)
+                (number
+                  (integer)))))))))
+  (variable_definition
+    (variable
+      (environment_var
+        (identifier)))
+    (function_call
+      (variable
+        (local_var
+          (identifier)))
+      (method_call
+        (method_name)
+        (parameter_call_list
+          (argument_calls
+            (unnamed_argument
+              (indexed_collection
+                (partial)
+                (number
+                  (integer))))))))))

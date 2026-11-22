@@ -431,3 +431,105 @@ Point {
         (variable
           (environment_var
             (identifier)))))))
+
+================================================================================
+Argument defaults written name(value)
+================================================================================
+
+Foo {
+    writeDefFile { arg dir, overwrite(true); ^dir }
+    *new { | size, collectionClass(Array) | ^size }
+    keys { arg species(Set); ^species }
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (class_def
+    (class)
+    (instance_method_name)
+    (function_block
+      (parameter_list
+        (argument
+          (identifier))
+        (argument
+          (identifier)
+          (argument_default
+            (literal
+              (bool)))))
+      (return_statement
+        (variable
+          (local_var
+            (identifier)))))
+    (class_method_marker)
+    (class_method_name)
+    (function_block
+      (parameter_list
+        (pipe_parameter_list
+          (pipe_token)
+          (pipe_argument
+            (identifier))
+          (pipe_argument
+            (identifier)
+            (class))
+          (pipe_token)))
+      (return_statement
+        (variable
+          (local_var
+            (identifier)))))
+    (instance_method_name)
+    (function_block
+      (parameter_list
+        (argument
+          (identifier)
+          (argument_default
+            (class))))
+      (return_statement
+        (variable
+          (local_var
+            (identifier)))))))
+
+================================================================================
+A class that holds indexed slots
+================================================================================
+
+Array[slot] : ArrayedCollection {
+    foo { ^1 }
+}
+String[char] : RawArray { }
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (class_def
+    (class)
+    (identifier)
+    (parent_class)
+    (instance_method_name)
+    (function_block
+      (return_statement
+        (literal
+          (number
+            (integer))))))
+  (class_def
+    (class)
+    (identifier)
+    (parent_class)))
+
+================================================================================
+A class name with a list of one name is still a list
+================================================================================
+
+Array[x].postln;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_call
+    (collection
+      (collection_type)
+      (variable
+        (environment_var
+          (identifier))))
+    (method_call
+      (method_name))))

@@ -169,6 +169,10 @@ module.exports = grammar({
     // may not show until the closing brace, so both are followed.
     [$.class_def, $.function_call],
 
+    // `Array[slot] : ArrayedCollection { ... }` opens a class, and `Array[item]`
+    // is a list of one item: followed as far as it takes to tell.
+    [$.local_var, $.instance_var, $.class_def],
+
     // Event vs code_block: (key: value) is event, (expr; expr) is code_block
     [$.event, $.code_block],
 
@@ -574,7 +578,12 @@ module.exports = grammar({
         optional($.argument_default),
       ),
 
-    argument_default: $ => seq("=", field("value", $._expression)),
+    // `= value`, or the older `name(value)`
+    argument_default: $ =>
+      choice(
+        seq("=", field("value", $._expression)),
+        seq("(", field("value", $._expression), ")"),
+      ),
 
     // Safe expressions that cannot contain | as a binary operator
     _pipe_safe_expression: $ =>
@@ -632,7 +641,16 @@ module.exports = grammar({
     pipe_argument: $ =>
       seq(
         field("name", $.identifier),
-        field("value", optional(seq("=", $._pipe_safe_expression))),
+        field(
+          "value",
+          optional(
+            choice(
+              seq("=", $._pipe_safe_expression),
+              // the older `name(value)`
+              seq("(", $._expression, ")"),
+            ),
+          ),
+        ),
       ),
 
     pipe_parameter_list: $ =>
@@ -939,6 +957,12 @@ module.exports = grammar({
         seq(
           optional("+"),
           $.class,
+          // `Array[slot]`, `String[char]`: what an indexed class holds
+          // (a variable's precedence, so that neither reading of the name
+          // inside outranks the other: see the conflicts)
+          optional(
+            prec(PRECEDENCE.localvar, seq("[", optional($.identifier), "]")),
+          ),
           optional(seq(":", alias($.class, $.parent_class))),
           "{",
           repeat(
@@ -1199,6 +1223,8 @@ module.exports = grammar({
 
     _indexable_object: $ =>
       choice(
+        // `_[0]`: the index of whatever is passed
+        $.partial,
         $.collection,
         $.variable,
         $.string,
