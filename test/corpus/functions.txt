@@ -212,9 +212,8 @@ Spaces in argument list with no commas
           (pipe_argument
             name: (identifier)
             value: (literal
-              (symbol)))
-          (pipe_argument
-            name: (identifier))
+              (symbol
+                (identifier))))
           (pipe_argument
             name: (identifier))
           (pipe_token))))))

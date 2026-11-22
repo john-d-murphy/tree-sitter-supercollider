@@ -823,3 +823,42 @@ An event key may begin with a capital
                 (identifier)))
             (method_call
               (method_name))))))))
+
+================================================================================
+A symbol as a key beside other keys
+================================================================================
+
+(type: \set, \id: 3);
+[\freq: 440, amp: 0.1];
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (event
+    (associative_item
+      (event_key)
+      (item
+        (literal
+          (symbol
+            (identifier)))))
+    (associative_item
+      (symbol
+        (identifier))
+      (item
+        (literal
+          (number
+            (integer))))))
+  (collection
+    (associative_item
+      (symbol
+        (identifier))
+      (item
+        (literal
+          (number
+            (integer)))))
+    (associative_item
+      (event_key)
+      (item
+        (literal
+          (number
+            (float)))))))

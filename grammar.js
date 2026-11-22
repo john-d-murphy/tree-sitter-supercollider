@@ -94,6 +94,9 @@ const PRECEDENCE = {
   code_block: 20,
 };
 
+// What an identifier is made of.
+const NAME = /(r#)?[a-zA-Zα-ωΑ-Ωµ_][a-zA-Zα-ωΑ-Ωµ\d_]*/;
+
 // sclang reserves none of the names of its control structures: `arg for;`
 // declares a variable like any other, and `for` then reads it.
 const CONTROL_NAMES = [
@@ -849,10 +852,19 @@ module.exports = grammar({
 
     symbol: $ =>
       choice(
+        // The name runs on from the backslash and is all the symbol's: in
+        // `(\id: 3)` the colon is not part of it, as it would be of a
+        // selector (`x id: 3`), which the precedence is there to outrank.
         prec.left(
           seq(
             "\\",
-            optional(choice($.identifier, /[0-9]+/, $.escape_sequence)),
+            optional(
+              choice(
+                alias(token.immediate(prec(1, NAME)), $.identifier),
+                token.immediate(/[0-9]+/),
+                $.escape_sequence,
+              ),
+            ),
           ),
         ),
         prec.left(
@@ -1458,7 +1470,7 @@ module.exports = grammar({
 
     class: $ => prec(PRECEDENCE.class, field("name", /[A-Z]+[a-zA-Z\d_]*/)),
 
-    identifier: $ => /(r#)?[a-zA-Zα-ωΑ-Ωµ_][a-zA-Zα-ωΑ-Ωµ\d_]*/,
+    identifier: $ => NAME,
 
     // Nil check
     // @FIXME: Should be a binary operator
