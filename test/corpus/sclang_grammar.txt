@@ -1160,3 +1160,231 @@ A backslash takes whatever follows it
       (escape_sequence)))
   (literal
     (symbol)))
+
+==================
+Forms the help corpus and the class library turned up
+==================
+x.if(a);
+x.if;
+if(a, b, c,);
+f(1);
+f($ );
+{ :[x, y], x <- (0..10), y <- (0..x) };
+(type: \test, \y: 7);
+x[(-1..3)];
+a[1, 3..] = 1;
+o(Maybe(1), *a);
+for(3, 7) { |i| i };
+while(true);
+(1..8).collect((1.._));
+{ |how = "", end = "..."| how };
+(0..i*3);
+---
+
+(source_file
+  (function_call
+    (variable
+      (environment_var
+        (identifier)))
+    (method_call
+      (method_name)
+      (parameter_call_list
+        (argument_calls
+          (unnamed_argument
+            (variable
+              (environment_var
+                (identifier))))))))
+  (function_call
+    (variable
+      (environment_var
+        (identifier)))
+    (method_call
+      (method_name)))
+  (function_call
+    (method_name)
+    (parameter_call_list
+      (argument_calls
+        (unnamed_argument
+          (variable
+            (environment_var
+              (identifier)))))
+      (argument_calls
+        (unnamed_argument
+          (variable
+            (environment_var
+              (identifier)))))
+      (argument_calls
+        (unnamed_argument
+          (variable
+            (environment_var
+              (identifier)))))))
+  (function_call
+    (method_name)
+    (parameter_call_list
+      (argument_calls
+        (unnamed_argument
+          (literal
+            (number
+              (integer)))))))
+  (function_call
+    (method_name)
+    (parameter_call_list
+      (argument_calls
+        (unnamed_argument
+          (literal
+            (char))))))
+  (list_comprehension
+    (collection
+      (variable
+        (environment_var
+          (identifier)))
+      (variable
+        (environment_var
+          (identifier))))
+    (comprehension_generator
+      (variable
+        (environment_var
+          (identifier)))
+      (generator_arrow)
+      (collection
+        (arithmetic_series
+          (number
+            (integer))
+          (number
+            (integer)))))
+    (comprehension_generator
+      (variable
+        (environment_var
+          (identifier)))
+      (generator_arrow)
+      (collection
+        (arithmetic_series
+          (number
+            (integer))
+          (variable
+            (environment_var
+              (identifier)))))))
+  (event
+    (associative_item
+      (event_key)
+      (item
+        (literal
+          (symbol
+            (identifier)))))
+    (associative_item
+      (symbol
+        (identifier))
+      (item
+        (literal
+          (number
+            (integer))))))
+  (indexed_collection
+    (variable
+      (environment_var
+        (identifier)))
+    (collection
+      (arithmetic_series
+        (unary_expression
+          (literal
+            (number
+              (integer))))
+        (number
+          (integer)))))
+  (binary_expression
+    (indexed_collection
+      (variable
+        (environment_var
+          (identifier)))
+      (index_subrange
+        (number
+          (integer))
+        (number
+          (integer))))
+    (literal
+      (number
+        (integer))))
+  (function_call
+    (method_name)
+    (parameter_call_list
+      (argument_calls
+        (unnamed_argument
+          (function_call
+            (class)
+            (parameter_call_list
+              (argument_calls
+                (unnamed_argument
+                  (literal
+                    (number
+                      (integer)))))))))
+      (argument_calls
+        (unnamed_argument
+          (unary_expression
+            (variable
+              (environment_var
+                (identifier))))))))
+  (control_structure
+    (for
+      (literal
+        (number
+          (integer)))
+      (literal
+        (number
+          (integer)))
+      (function_block
+        (parameter_list
+          (pipe_parameter_list
+            (pipe_token)
+            (pipe_argument
+              (identifier))
+            (pipe_token)))
+        (variable
+          (environment_var
+            (identifier))))))
+  (control_structure
+    (while
+      (literal
+        (bool))))
+  (function_call
+    (collection
+      (arithmetic_series
+        (number
+          (integer))
+        (number
+          (integer))))
+    (method_call
+      (method_name)
+      (parameter_call_list
+        (argument_calls
+          (unnamed_argument
+            (collection
+              (arithmetic_series
+                (number
+                  (integer))
+                (partial))))))))
+  (function_block
+    (parameter_list
+      (pipe_parameter_list
+        (pipe_token)
+        (pipe_argument
+          (identifier)
+          (literal
+            (string)))
+        (pipe_argument
+          (identifier)
+          (literal
+            (string)))
+        (pipe_token)))
+    (variable
+      (local_var
+        (identifier))))
+  (collection
+    (arithmetic_series
+      (number
+        (integer))
+      (binary_expression
+        (variable
+          (environment_var
+            (identifier)))
+        (literal
+          (number
+            (integer)))))))

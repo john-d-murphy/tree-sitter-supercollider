@@ -9211,18 +9211,6 @@
       "var_binding"
     ],
     [
-      "comprehension_generator",
-      "comprehension_filter"
-    ],
-    [
-      "comprehension_binding",
-      "comprehension_filter"
-    ],
-    [
-      "comprehension_binding",
-      "instance_var"
-    ],
-    [
       "variable",
       "class_def"
     ],
@@ -9238,10 +9226,6 @@
     [
       "source_file",
       "_expression_statement"
-    ],
-    [
-      "event",
-      "code_block"
     ],
     [
       "_object",

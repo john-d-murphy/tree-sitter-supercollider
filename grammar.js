@@ -254,13 +254,6 @@ module.exports = grammar({
     [$._expression_statement, $._object],
     [$.instance_var, $.var_binding],
 
-    // List comprehension: generator (x <- ...) vs filter (any _object)
-    [$.comprehension_generator, $.comprehension_filter],
-    // List comprehension: binding (var x = ...) vs filter (any _object starting with var)
-    [$.comprehension_binding, $.comprehension_filter],
-    // List comprehension binding vs instance_var (both can be: var identifier ...)
-    [$.comprehension_binding, $.instance_var],
-
     // Class definition: bare identifier in class body could be instance_var declaration
     // or a variable reference in an expression
     [$.variable, $.class_def],
@@ -278,8 +271,6 @@ module.exports = grammar({
     // final expression.
     [$.source_file, $._expression_statement],
 
-    // Event vs code_block: (key: value) is event, (expr; expr) is code_block
-    [$.event, $.code_block],
 
     // expr.if(func, func) vs expr.if(obj, obj)
     [$._object, $.if],
