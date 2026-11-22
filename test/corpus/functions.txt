@@ -1315,3 +1315,55 @@ f.value(a, b: x = 1; x + 1);
               (literal
                 (number
                   (integer))))))))))
+
+================================================================================
+A default with no equals sign before it
+================================================================================
+
+{ |start = 0, range -1| start + range };
+{ |a 1 b \x| a };
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_block
+    (parameter_list
+      (pipe_parameter_list
+        (pipe_token)
+        (pipe_argument
+          (identifier)
+          (literal
+            (number
+              (integer))))
+        (pipe_argument
+          (identifier)
+          (pipe_safe_unary_expression
+            (literal
+              (number
+                (integer)))))
+        (pipe_token)))
+    (binary_expression
+      (variable
+        (local_var
+          (identifier)))
+      (variable
+        (local_var
+          (identifier)))))
+  (function_block
+    (parameter_list
+      (pipe_parameter_list
+        (pipe_token)
+        (pipe_argument
+          (identifier)
+          (literal
+            (number
+              (integer))))
+        (pipe_argument
+          (identifier)
+          (literal
+            (symbol
+              (identifier))))
+        (pipe_token)))
+    (variable
+      (environment_var
+        (identifier)))))

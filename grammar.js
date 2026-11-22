@@ -740,6 +740,10 @@ module.exports = grammar({
               seq("=", $._pipe_safe_expression),
               // the older `name(value)`
               seq("(", $._expression, ")"),
+              // before a literal or its negative the equals sign may be
+              // left out: `|start = 0, range -1|`
+              $.literal,
+              $.pipe_safe_unary_expression,
             ),
           ),
         ),

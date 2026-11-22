@@ -1960,6 +1960,14 @@
                         "value": ")"
                       }
                     ]
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "literal"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "pipe_safe_unary_expression"
                   }
                 ]
               },
