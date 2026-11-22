@@ -774,3 +774,90 @@ while(true);
     (while
       (literal
         (bool)))))
+
+================================================================================
+A control structure's name as the name of a method called
+================================================================================
+
+{ x < 3 }.while({ x = x + 1 });
+x.while;
+x.for(1, 2);
+x.switch.case.protect { 1 }.try(2);
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_call
+    (function_block
+      (binary_expression
+        (variable
+          (environment_var
+            (identifier)))
+        (literal
+          (number
+            (integer)))))
+    (method_call
+      (method_name)
+      (parameter_call_list
+        (argument_calls
+          (unnamed_argument
+            (function_block
+              (variable_definition
+                (variable
+                  (environment_var
+                    (identifier)))
+                (binary_expression
+                  (variable
+                    (environment_var
+                      (identifier)))
+                  (literal
+                    (number
+                      (integer)))))))))))
+  (function_call
+    (variable
+      (environment_var
+        (identifier)))
+    (method_call
+      (method_name)))
+  (function_call
+    (variable
+      (environment_var
+        (identifier)))
+    (method_call
+      (method_name)
+      (parameter_call_list
+        (argument_calls
+          (unnamed_argument
+            (literal
+              (number
+                (integer)))))
+        (argument_calls
+          (unnamed_argument
+            (literal
+              (number
+                (integer))))))))
+  (function_call
+    (function_call
+      (function_call
+        (function_call
+          (variable
+            (environment_var
+              (identifier)))
+          (method_call
+            (method_name)))
+        (method_call
+          (method_name)))
+      (method_call
+        (method_name)
+        (function_block
+          (literal
+            (number
+              (integer))))))
+    (method_call
+      (method_name)
+      (parameter_call_list
+        (argument_calls
+          (unnamed_argument
+            (literal
+              (number
+                (integer)))))))))

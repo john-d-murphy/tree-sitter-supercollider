@@ -154,8 +154,8 @@ module.exports = grammar({
     // [$._object, $._indexable_object],
 
     // duplication / if / calls
-    [$.duplicated_statement, $.function_call, $.if],
-    [$.function_call, $.binary_expression, $.if],
+    [$.duplicated_statement, $.function_call, $.if, $.while],
+    [$.function_call, $.binary_expression, $.if, $.while],
     // internal repetition ambiguity in indexed_collection
     // [$.indexed_collection],
 
@@ -460,7 +460,17 @@ module.exports = grammar({
       prec.left(
         seq(
           ".",
-          field("name", alias($.identifier, $.method_name)),
+          // A method may be called by a control structure's name. `if` is
+          // not among them here: `x.if ...` is the if rule's own.
+          field(
+            "name",
+            choice(
+              alias($.identifier, $.method_name),
+              ...CONTROL_NAMES
+                .filter(word => word != "if")
+                .map(word => alias(word, $.method_name)),
+            ),
+          ),
           // receiver.method(args...) or receiver.method { ... }
           optional(
             seq(
@@ -1592,11 +1602,15 @@ module.exports = grammar({
             ")",
           ),
         ),
-        // testFunc.while( bodyFunc );
-        seq(
-          field("expression", $._object),
-          field("name", ".while"),
-          field("body_func", $.function_block),
+        // testFunc.while { bodyFunc }. The precedence is over a method call's:
+        // written just so, it is this.
+        prec.left(
+          1,
+          seq(
+            field("expression", $._object),
+            field("name", seq(".", "while")),
+            field("body_func", $.function_block),
+          ),
         ),
         // while testFunc bodyFunc;
         prec.left(

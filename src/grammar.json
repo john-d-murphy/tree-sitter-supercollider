@@ -766,13 +766,81 @@
             "type": "FIELD",
             "name": "name",
             "content": {
-              "type": "ALIAS",
-              "content": {
-                "type": "SYMBOL",
-                "name": "identifier"
-              },
-              "named": true,
-              "value": "method_name"
+              "type": "CHOICE",
+              "members": [
+                {
+                  "type": "ALIAS",
+                  "content": {
+                    "type": "SYMBOL",
+                    "name": "identifier"
+                  },
+                  "named": true,
+                  "value": "method_name"
+                },
+                {
+                  "type": "ALIAS",
+                  "content": {
+                    "type": "STRING",
+                    "value": "while"
+                  },
+                  "named": true,
+                  "value": "method_name"
+                },
+                {
+                  "type": "ALIAS",
+                  "content": {
+                    "type": "STRING",
+                    "value": "for"
+                  },
+                  "named": true,
+                  "value": "method_name"
+                },
+                {
+                  "type": "ALIAS",
+                  "content": {
+                    "type": "STRING",
+                    "value": "forBy"
+                  },
+                  "named": true,
+                  "value": "method_name"
+                },
+                {
+                  "type": "ALIAS",
+                  "content": {
+                    "type": "STRING",
+                    "value": "case"
+                  },
+                  "named": true,
+                  "value": "method_name"
+                },
+                {
+                  "type": "ALIAS",
+                  "content": {
+                    "type": "STRING",
+                    "value": "switch"
+                  },
+                  "named": true,
+                  "value": "method_name"
+                },
+                {
+                  "type": "ALIAS",
+                  "content": {
+                    "type": "STRING",
+                    "value": "protect"
+                  },
+                  "named": true,
+                  "value": "method_name"
+                },
+                {
+                  "type": "ALIAS",
+                  "content": {
+                    "type": "STRING",
+                    "value": "try"
+                  },
+                  "named": true,
+                  "value": "method_name"
+                }
+              ]
             }
           },
           {
@@ -6284,33 +6352,46 @@
           }
         },
         {
-          "type": "SEQ",
-          "members": [
-            {
-              "type": "FIELD",
-              "name": "expression",
-              "content": {
-                "type": "SYMBOL",
-                "name": "_object"
+          "type": "PREC_LEFT",
+          "value": 1,
+          "content": {
+            "type": "SEQ",
+            "members": [
+              {
+                "type": "FIELD",
+                "name": "expression",
+                "content": {
+                  "type": "SYMBOL",
+                  "name": "_object"
+                }
+              },
+              {
+                "type": "FIELD",
+                "name": "name",
+                "content": {
+                  "type": "SEQ",
+                  "members": [
+                    {
+                      "type": "STRING",
+                      "value": "."
+                    },
+                    {
+                      "type": "STRING",
+                      "value": "while"
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "FIELD",
+                "name": "body_func",
+                "content": {
+                  "type": "SYMBOL",
+                  "name": "function_block"
+                }
               }
-            },
-            {
-              "type": "FIELD",
-              "name": "name",
-              "content": {
-                "type": "STRING",
-                "value": ".while"
-              }
-            },
-            {
-              "type": "FIELD",
-              "name": "body_func",
-              "content": {
-                "type": "SYMBOL",
-                "name": "function_block"
-              }
-            }
-          ]
+            ]
+          }
         },
         {
           "type": "PREC_LEFT",
@@ -7052,12 +7133,14 @@
     [
       "duplicated_statement",
       "function_call",
-      "if"
+      "if",
+      "while"
     ],
     [
       "function_call",
       "binary_expression",
-      "if"
+      "if",
+      "while"
     ],
     [
       "_object",
