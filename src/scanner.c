@@ -21,7 +21,7 @@ static void advance(TSLexer *lexer) { lexer->advance(lexer, false); }
 static bool is_num_char(int32_t c) { return c == '_' || iswdigit(c); }
 
 static bool is_identifier_start(int32_t c) {
-  return (c >= 'a' && c <= 'z') || c == '_';
+  return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
 }
 
 static bool is_identifier_char(int32_t c) {

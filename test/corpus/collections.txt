@@ -782,3 +782,44 @@ x = [Prand([nil, Pseq(#[24, 31]);]), 5];
       (literal
         (number
           (integer))))))
+
+================================================================================
+An event key may begin with a capital
+================================================================================
+
+(name: 70, CLR: 32, reset: 40);
+[CLR: { this.clear }];
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (event
+    (associative_item
+      (event_key)
+      (item
+        (literal
+          (number
+            (integer)))))
+    (associative_item
+      (event_key)
+      (item
+        (literal
+          (number
+            (integer)))))
+    (associative_item
+      (event_key)
+      (item
+        (literal
+          (number
+            (integer))))))
+  (collection
+    (associative_item
+      (event_key)
+      (item
+        (function_block
+          (function_call
+            (variable
+              (local_var
+                (identifier)))
+            (method_call
+              (method_name))))))))
