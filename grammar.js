@@ -141,6 +141,12 @@ function methodName($) {
   );
 }
 
+// The value of an argument or of a list's element: `a; b; c` evaluates all
+// and is worth the last, and a semicolon may close it.
+function expressionSequence($) {
+  return seq($._object, repeat(seq(";", $._object)), optional(";"));
+}
+
 function sepBy1(sep, rule) {
   return seq(rule, repeat(seq(sep, rule)));
 }
@@ -770,17 +776,7 @@ module.exports = grammar({
 
     // function call is added here to allow things like Array() in params
     // Also allows statement sequences like foo(a; b; c) where the value is c
-    unnamed_argument: $ =>
-      choice(
-        // Statement sequence: a; b; c - evaluates all, value is last
-        seq(
-          $._object,
-          repeat1(seq(";", $._object)),
-          optional(";"),
-        ),
-        // Single expression (possibly with trailing semicolon)
-        seq($._object, optional(";")),
-      ),
+    unnamed_argument: $ => expressionSequence($),
 
     named_argument: $ =>
       prec.left(
@@ -791,7 +787,7 @@ module.exports = grammar({
             seq(
               choice($.symbol, name($)),
               choice("=", ":"),
-              $._object,
+              expressionSequence($),
             ),
             // Single-letter names lex as environment_var's /[a-z]/ token,
             // so they need their own branch (`f.value(2, c: 3)`). Restricted
@@ -801,7 +797,7 @@ module.exports = grammar({
             seq(
               alias(/[a-z]/, $.identifier),
               ":",
-              $._object,
+              expressionSequence($),
             ),
           ),
         ),
@@ -1196,11 +1192,7 @@ module.exports = grammar({
               // last. lang11d: arrayelems1 elements are exprseq, and
               // exprseq is `exprn optsemi` — so a trailing `;` inside an
               // element is legal sclang: [x, foo(y);]
-              seq(
-                $._object,
-                repeat(seq(";", $._object)),
-                optional(";"),
-              ),
+              expressionSequence($),
             ),
           ),
         ),
