@@ -3704,26 +3704,6 @@
                                 "value": "[a-z]"
                               },
                               {
-                                "type": "SYMBOL",
-                                "name": "_operator_method_name"
-                              },
-                              {
-                                "type": "STRING",
-                                "value": "*"
-                              },
-                              {
-                                "type": "STRING",
-                                "value": "<"
-                              },
-                              {
-                                "type": "STRING",
-                                "value": ">"
-                              },
-                              {
-                                "type": "STRING",
-                                "value": "<>"
-                              },
-                              {
                                 "type": "STRING",
                                 "value": "if"
                               },
@@ -3754,6 +3734,38 @@
                               {
                                 "type": "STRING",
                                 "value": "try"
+                              },
+                              {
+                                "type": "SYMBOL",
+                                "name": "_operator_method_name"
+                              },
+                              {
+                                "type": "STRING",
+                                "value": "*"
+                              },
+                              {
+                                "type": "STRING",
+                                "value": "-"
+                              },
+                              {
+                                "type": "STRING",
+                                "value": "!"
+                              },
+                              {
+                                "type": "STRING",
+                                "value": "|"
+                              },
+                              {
+                                "type": "STRING",
+                                "value": "<"
+                              },
+                              {
+                                "type": "STRING",
+                                "value": ">"
+                              },
+                              {
+                                "type": "STRING",
+                                "value": "<>"
                               }
                             ]
                           },
@@ -3826,6 +3838,38 @@
                               {
                                 "type": "STRING",
                                 "value": "try"
+                              },
+                              {
+                                "type": "SYMBOL",
+                                "name": "_operator_method_name"
+                              },
+                              {
+                                "type": "STRING",
+                                "value": "*"
+                              },
+                              {
+                                "type": "STRING",
+                                "value": "-"
+                              },
+                              {
+                                "type": "STRING",
+                                "value": "!"
+                              },
+                              {
+                                "type": "STRING",
+                                "value": "|"
+                              },
+                              {
+                                "type": "STRING",
+                                "value": "<"
+                              },
+                              {
+                                "type": "STRING",
+                                "value": ">"
+                              },
+                              {
+                                "type": "STRING",
+                                "value": "<>"
                               }
                             ]
                           },

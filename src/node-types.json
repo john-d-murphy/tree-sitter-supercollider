@@ -4091,6 +4091,11 @@
     }
   },
   {
+    "type": "pipe_token",
+    "named": true,
+    "fields": {}
+  },
+  {
     "type": "protect",
     "named": true,
     "fields": {
@@ -5793,10 +5798,6 @@
     "named": false
   },
   {
-    "type": "pipe_token",
-    "named": true
-  },
-  {
     "type": "primitive",
     "named": true
   },
@@ -5862,6 +5863,10 @@
   },
   {
     "type": "{:",
+    "named": false
+  },
+  {
+    "type": "|",
     "named": false
   },
   {

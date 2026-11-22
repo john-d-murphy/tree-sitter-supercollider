@@ -115,6 +115,29 @@ function name($) {
   );
 }
 
+// The name a method is defined by: an identifier or, for a binary operator's
+// method (`== { |other| ... }`), the operator.
+function methodName($) {
+  return choice(
+    $.identifier,
+    // a one-letter name is its own token (an interpreter variable, where an
+    // expression can be)
+    /[a-z]/,
+    ...CONTROL_NAMES,
+    $._operator_method_name,
+    // These operators are tokens of their own where an expression or a
+    // function's arguments may begin, as they may while a class definition
+    // and a call with a block are both being followed.
+    "*",
+    "-",
+    "!",
+    "|",
+    "<",
+    ">",
+    "<>",
+  );
+}
+
 function sepBy1(sep, rule) {
   return seq(rule, repeat(seq(sep, rule)));
 }
@@ -1053,29 +1076,13 @@ module.exports = grammar({
                 ),
                 ";",
               ),
-              // Instance method. Its name is an identifier or, for a binary
-              // operator's method (`== { |other| ... }`), the operator. A lone
-              // `*` is also the class method marker; what follows
-              // (a block, or a name) says which it is. The precedence is a
-              // call's, so that neither outranks the other and the conflict
-              // declared above is left to be settled by what follows.
+              // Instance method. A lone `*` is its name or the class method
+              // marker; what follows (a block, or a name) says which it is.
+              // The precedence is a call's, so that neither outranks the
+              // other and the conflict declared above is left to be settled
+              // by what follows.
               prec.right(PRECEDENCE.call, seq(
-                alias(
-                  choice(
-                    $.identifier,
-                    // a one-letter name is its own token (an interpreter
-                    // variable, where an expression can be)
-                    /[a-z]/,
-                    $._operator_method_name,
-                    "*",
-                    // these three also open a variable's declaration (`<name`)
-                    "<",
-                    ">",
-                    "<>",
-                    ...CONTROL_NAMES,
-                  ),
-                  $.instance_method_name,
-                ),
+                alias(methodName($), $.instance_method_name),
                 $.function_block,
               )),
               // Class method (a call's precedence, as for the instance method)
@@ -1085,10 +1092,7 @@ module.exports = grammar({
               // be reduced before the name after it is seen.
               prec.right(PRECEDENCE.call, seq(
                 alias("*", $.class_method_marker),
-                alias(
-                  choice($.identifier, /[a-z]/, ...CONTROL_NAMES),
-                  $.class_method_name,
-                ),
+                alias(methodName($), $.class_method_name),
                 $.function_block,
               )),
             ),

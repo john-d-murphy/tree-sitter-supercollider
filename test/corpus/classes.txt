@@ -655,3 +655,94 @@ Foo {
         (literal
           (number
             (integer)))))))
+
+================================================================================
+Class methods and first methods named by operators
+================================================================================
+
+Post {
+    classvar <>formats;
+    * << { arg item; item.post }
+    * <<* { arg collection; collection.do(_.post) }
+}
+Bits {
+    | { arg that; ^this.union(that) }
+    - { arg that; ^this.difference(that) }
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (class_def
+    (class)
+    (classvar
+      (identifier))
+    (class_method_marker)
+    (class_method_name)
+    (function_block
+      (parameter_list
+        (argument
+          (identifier)))
+      (function_call
+        (variable
+          (local_var
+            (identifier)))
+        (method_call
+          (method_name))))
+    (class_method_marker)
+    (class_method_name)
+    (function_block
+      (parameter_list
+        (argument
+          (identifier)))
+      (function_call
+        (variable
+          (local_var
+            (identifier)))
+        (method_call
+          (method_name)
+          (parameter_call_list
+            (argument_calls
+              (unnamed_argument
+                (function_call
+                  (partial)
+                  (method_call
+                    (method_name))))))))))
+  (class_def
+    (class)
+    (instance_method_name)
+    (function_block
+      (parameter_list
+        (argument
+          (identifier)))
+      (return_statement
+        (function_call
+          (variable
+            (local_var
+              (identifier)))
+          (method_call
+            (method_name)
+            (parameter_call_list
+              (argument_calls
+                (unnamed_argument
+                  (variable
+                    (local_var
+                      (identifier))))))))))
+    (instance_method_name)
+    (function_block
+      (parameter_list
+        (argument
+          (identifier)))
+      (return_statement
+        (function_call
+          (variable
+            (local_var
+              (identifier)))
+          (method_call
+            (method_name)
+            (parameter_call_list
+              (argument_calls
+                (unnamed_argument
+                  (variable
+                    (local_var
+                      (identifier))))))))))))
