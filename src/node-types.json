@@ -86,10 +86,6 @@
             "named": true
           },
           {
-            "type": "class_def",
-            "named": true
-          },
-          {
             "type": "code_block",
             "named": true
           },
@@ -944,11 +940,6 @@
     }
   },
   {
-    "type": "class_method_marker",
-    "named": true,
-    "fields": {}
-  },
-  {
     "type": "classvar",
     "named": true,
     "fields": {
@@ -997,10 +988,6 @@
         },
         {
           "type": "class",
-          "named": true
-        },
-        {
-          "type": "class_def",
           "named": true
         },
         {
@@ -2386,10 +2373,6 @@
             "named": true
           },
           {
-            "type": "class_def",
-            "named": true
-          },
-          {
             "type": "code_block",
             "named": true
           },
@@ -3071,11 +3054,6 @@
         }
       ]
     }
-  },
-  {
-    "type": "instance_method_name",
-    "named": true,
-    "fields": {}
   },
   {
     "type": "instance_var",
@@ -5335,6 +5313,10 @@
     "named": true
   },
   {
+    "type": "class_method_marker",
+    "named": true
+  },
+  {
     "type": "class_method_name",
     "named": true
   },
@@ -5397,6 +5379,10 @@
   {
     "type": "inf",
     "named": false
+  },
+  {
+    "type": "instance_method_name",
+    "named": true
   },
   {
     "type": "integer",

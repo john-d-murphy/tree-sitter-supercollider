@@ -164,6 +164,11 @@ module.exports = grammar({
     // or a variable reference in an expression
     [$.variable, $.class_def],
 
+    // At the top of a file `Foo { a { ^1 } }` is a class with a method, and
+    // `Routine { loop { 1.wait } }.play` is a call with a block. Which it is
+    // may not show until the closing brace, so both are followed.
+    [$.class_def, $.function_call],
+
     // Event vs code_block: (key: value) is event, (expr; expr) is code_block
     [$.event, $.code_block],
 
@@ -198,10 +203,12 @@ module.exports = grammar({
         ),
       ),
 
+    // A class definition is not one of these: it stands only at the top of a
+    // file (source_file). Anywhere an expression can be, `Routine { ... }` is
+    // a call with a block.
     _expression: $ =>
       choice(
         $.function_block,
-        $.class_def,
         $._expression_statement,
       ),
 
@@ -380,13 +387,9 @@ module.exports = grammar({
               ),
             ),
           ),
-          // Function call with trailing block (lowercase identifiers only)
-          // NOTE: $.class is intentionally NOT included here to avoid conflict with class_def.
-          // Class { } at expression level parses as class_def, not function_call.
-          // Patterns like Routine { } or Task { } work via Routine.new { } or are
-          // handled by the Class(...) call syntax with arguments.
+          // Function call with trailing block: fork { }, Routine { }, Task { }
           seq(
-            field("callee", alias($.identifier, $.method_name)),
+            field("callee", choice(alias($.identifier, $.method_name), $.class)),
             field("block", $.function_block),
           ),
           // Function call with trailing list comprehension: all {: x, x <- (1..10) }
@@ -922,8 +925,12 @@ module.exports = grammar({
 
     return_statement: $ => prec.left(PRECEDENCE.unary, seq("^", $._object)),
 
+    // Where a class definition and a call with a block both fit to the end
+    // (`Foo { bar { ^1 } }` standing alone), it is the class definition.
     class_def: $ =>
-      prec(
+      prec.dynamic(
+        10,
+        prec(
         PRECEDENCE.class_def,
         seq(
           optional("+"),
@@ -960,24 +967,42 @@ module.exports = grammar({
               ),
               // Instance method. Its name is an identifier or, for a binary
               // operator's method (`== { |other| ... }`), the operator. A lone
-              // `*` is the same token as the class method marker; what follows
-              // (a block, or a name) says which it is.
-              seq(
+              // `*` is also the class method marker; what follows
+              // (a block, or a name) says which it is. The precedence is a
+              // call's, so that neither outranks the other and the conflict
+              // declared above is left to be settled by what follows.
+              prec.right(PRECEDENCE.call, seq(
                 alias(
-                  choice($.identifier, $._operator_method_name, $.class_method_marker),
+                  choice(
+                    $.identifier,
+                    // a one-letter name is its own token (an interpreter
+                    // variable, where an expression can be)
+                    /[a-z]/,
+                    $._operator_method_name,
+                    "*",
+                    // these three also open a variable's declaration (`<name`)
+                    "<",
+                    ">",
+                    "<>",
+                  ),
                   $.instance_method_name,
                 ),
                 $.function_block,
-              ),
-              // Class method
-              seq(
-                $.class_method_marker,
-                alias($.identifier, $.class_method_name),
+              )),
+              // Class method (a call's precedence, as for the instance method)
+              // The marker is the `*` of an expression under another name,
+              // not a rule of its own: where a class definition and a call
+              // with a block are both being followed, a rule would have to
+              // be reduced before the name after it is seen.
+              prec.right(PRECEDENCE.call, seq(
+                alias("*", $.class_method_marker),
+                alias(choice($.identifier, /[a-z]/), $.class_method_name),
                 $.function_block,
-              ),
+              )),
             ),
           ),
           "}",
+        ),
         ),
       ),
 
@@ -1696,8 +1721,6 @@ module.exports = grammar({
       ),
     pipe_token: $ => "|",
     // generator_arrow is defined in externals, handled by src/scanner.c
-    class_method_marker: $ => token("*"),
-
     // The name of a binary operator's method: any run of operator characters.
     _operator_method_name: $ => /[!@%&*\-+=|<>?\/]+/,
   },

@@ -318,3 +318,116 @@ Foo {
     (instance_method_name)
     (function_block
       (primitive))))
+
+================================================================================
+A class name with a block is a call
+================================================================================
+
+r = Routine { 1.wait };
+Routine { loop { 1.wait } }.play;
+Task { |x| x.wait };
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (variable_definition
+    (variable
+      (environment_var
+        (identifier)))
+    (function_call
+      (class)
+      (function_block
+        (function_call
+          (literal
+            (number
+              (integer)))
+          (method_call
+            (method_name))))))
+  (function_call
+    (function_call
+      (class)
+      (function_block
+        (function_call
+          (method_name)
+          (function_block
+            (function_call
+              (literal
+                (number
+                  (integer)))
+              (method_call
+                (method_name)))))))
+    (method_call
+      (method_name)))
+  (function_call
+    (class)
+    (function_block
+      (parameter_list
+        (pipe_parameter_list
+          (pipe_token)
+          (pipe_argument
+            (identifier))
+          (pipe_token)))
+      (function_call
+        (variable
+          (environment_var
+            (identifier)))
+        (method_call
+          (method_name))))))
+
+================================================================================
+A class and a call with a block that both fit: the class
+================================================================================
+
+Foo { bar { ^1 } }
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (class_def
+    (class)
+    (instance_method_name)
+    (function_block
+      (return_statement
+        (literal
+          (number
+            (integer)))))))
+
+================================================================================
+One-letter method names
+================================================================================
+
+Point {
+    var <>x, <>y;
+    *x { ^1 }
+    x { ^x }
+    y { ^y }
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (class_def
+    (class)
+    (instance_var
+      (identifier))
+    (instance_var
+      (identifier))
+    (class_method_marker)
+    (class_method_name)
+    (function_block
+      (return_statement
+        (literal
+          (number
+            (integer)))))
+    (instance_method_name)
+    (function_block
+      (return_statement
+        (variable
+          (environment_var
+            (identifier)))))
+    (instance_method_name)
+    (function_block
+      (return_statement
+        (variable
+          (environment_var
+            (identifier)))))))
