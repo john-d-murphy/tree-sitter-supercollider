@@ -400,8 +400,16 @@ module.exports = grammar({
         choice(
           // Free / namespaced calls, including Class(...) and ar(SinOsc, 110)
           // Optionally followed by a trailing block: collect((1..10)) { |n| n.squared }
+          // (a one-letter name is a token of its own)
           seq(
-            field("callee", choice(alias($.identifier, $.method_name), $.class)),
+            field(
+              "callee",
+              choice(
+                alias($.identifier, $.method_name),
+                alias(/[a-z]/, $.method_name),
+                $.class,
+              ),
+            ),
             "(",
             optional(field("arguments", $.parameter_call_list)),
             ")",
@@ -413,7 +421,7 @@ module.exports = grammar({
             ),
           ),
           // Function call with trailing block: fork { }, Routine { }, Task { },
-          // and `r { }` (a one-letter name is a token of its own)
+          // and `r { }`
           seq(
             field(
               "callee",
@@ -427,7 +435,13 @@ module.exports = grammar({
           ),
           // Function call with trailing list comprehension: all {: x, x <- (1..10) }
           seq(
-            field("callee", alias($.identifier, $.method_name)),
+            field(
+              "callee",
+              choice(
+                alias($.identifier, $.method_name),
+                alias(/[a-z]/, $.method_name),
+              ),
+            ),
             field("comprehension", $.list_comprehension),
           ),
           // Parenthesized binary operator as callee: (+++)(a, 99, _)

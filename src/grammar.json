@@ -532,6 +532,15 @@
                       "value": "method_name"
                     },
                     {
+                      "type": "ALIAS",
+                      "content": {
+                        "type": "PATTERN",
+                        "value": "[a-z]"
+                      },
+                      "named": true,
+                      "value": "method_name"
+                    },
+                    {
                       "type": "SYMBOL",
                       "name": "class"
                     }
@@ -644,13 +653,27 @@
                 "type": "FIELD",
                 "name": "callee",
                 "content": {
-                  "type": "ALIAS",
-                  "content": {
-                    "type": "SYMBOL",
-                    "name": "identifier"
-                  },
-                  "named": true,
-                  "value": "method_name"
+                  "type": "CHOICE",
+                  "members": [
+                    {
+                      "type": "ALIAS",
+                      "content": {
+                        "type": "SYMBOL",
+                        "name": "identifier"
+                      },
+                      "named": true,
+                      "value": "method_name"
+                    },
+                    {
+                      "type": "ALIAS",
+                      "content": {
+                        "type": "PATTERN",
+                        "value": "[a-z]"
+                      },
+                      "named": true,
+                      "value": "method_name"
+                    }
+                  ]
                 }
               },
               {
