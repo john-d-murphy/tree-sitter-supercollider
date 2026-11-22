@@ -845,7 +845,7 @@ module.exports = grammar({
     // Radix notation: 2r10010 (binary), 8r777 (octal), 16rFF (hex), etc.
     radix_integer: $ => /\d+r[a-zA-Z0-9]+/,
     float: $ => /\d+\.\d+/,
-    exponential: $ => /-?\d+(\.\d+)?[eE]-?\d+/,
+    exponential: $ => /-?\d+(\.\d+)?[eE][-+]?\d+/,
     // Musical accidentals: 1b (flat), 5s (sharp) - used in degree notation
     // Lexer prefers longer match, so 1b matches accidental rather than integer+identifier
     accidental: $ => /\d+[bs]/,

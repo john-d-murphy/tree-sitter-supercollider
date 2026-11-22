@@ -2535,7 +2535,7 @@
     },
     "exponential": {
       "type": "PATTERN",
-      "value": "-?\\d+(\\.\\d+)?[eE]-?\\d+"
+      "value": "-?\\d+(\\.\\d+)?[eE][-+]?\\d+"
     },
     "accidental": {
       "type": "PATTERN",

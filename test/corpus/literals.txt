@@ -432,3 +432,28 @@ warn("a %" "b".format(1));
                     (literal
                       (number
                         (integer)))))))))))))
+
+================================================================================
+An exponent with a plus sign
+================================================================================
+
+x = 1e+8;
+y = 1.5e+3;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (variable_definition
+    (variable
+      (environment_var
+        (identifier)))
+    (literal
+      (number
+        (exponential))))
+  (variable_definition
+    (variable
+      (environment_var
+        (identifier)))
+    (literal
+      (number
+        (exponential)))))
