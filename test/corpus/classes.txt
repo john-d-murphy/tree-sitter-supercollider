@@ -622,3 +622,36 @@ Foo {
       (variable
         (environment_var
           (identifier))))))
+
+================================================================================
+Methods named as the control structures are
+================================================================================
+
+Foo {
+    for { arg endval, function; ^1 }
+    *while { ^2 }
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (class_def
+    (class)
+    (instance_method_name)
+    (function_block
+      (parameter_list
+        (argument
+          (identifier))
+        (argument
+          (identifier)))
+      (return_statement
+        (literal
+          (number
+            (integer)))))
+    (class_method_marker)
+    (class_method_name)
+    (function_block
+      (return_statement
+        (literal
+          (number
+            (integer)))))))

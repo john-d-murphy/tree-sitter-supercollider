@@ -94,6 +94,27 @@ const PRECEDENCE = {
   code_block: 20,
 };
 
+// sclang reserves none of the names of its control structures: `arg for;`
+// declares a variable like any other, and `for` then reads it.
+const CONTROL_NAMES = [
+  "if",
+  "while",
+  "for",
+  "forBy",
+  "case",
+  "switch",
+  "protect",
+  "try",
+];
+
+// The name of a variable or an argument, where it is declared or read.
+function name($) {
+  return choice(
+    $.identifier,
+    ...CONTROL_NAMES.map(word => alias(word, $.identifier)),
+  );
+}
+
 function sepBy1(sep, rule) {
   return seq(rule, repeat(seq(sep, rule)));
 }
@@ -589,7 +610,7 @@ module.exports = grammar({
     // 2. Standard 'arg' declaration (e.g., "arg a = 1;")
     argument: $ =>
       seq(
-        field("name", $.identifier),
+        field("name", name($)),
         optional($.argument_default),
       ),
 
@@ -655,7 +676,7 @@ module.exports = grammar({
     // Pipe argument uses restricted expressions
     pipe_argument: $ =>
       seq(
-        field("name", $.identifier),
+        field("name", name($)),
         field(
           "value",
           optional(
@@ -686,7 +707,7 @@ module.exports = grammar({
       ),
 
     // see https://doc.sccode.org/Reference/Functions.html#Variable%20Arguments
-    variable_argument: $ => seq("...", field("name", $.identifier)),
+    variable_argument: $ => seq("...", field("name", name($))),
 
     // When supplying arguments to a function call
     parameter_call_list: $ => prec.left(seq(sepBy1(",", $.argument_calls), optional(","))),
@@ -718,7 +739,7 @@ module.exports = grammar({
           "name",
           choice(
             seq(
-              choice($.symbol, $.identifier),
+              choice($.symbol, name($)),
               choice("=", ":"),
               $._object,
             ),
@@ -868,7 +889,7 @@ module.exports = grammar({
       prec(
         PRECEDENCE.localvar,
         choice(
-          field("name", $.identifier),
+          field("name", name($)),
           // seq("var", field("name", $.identifier)),
         ),
       ),
@@ -905,7 +926,7 @@ module.exports = grammar({
     // helper: one name (with optional initializer) in a `var` list
     var_binding: $ =>
       seq(
-        field("name", $.identifier),
+        field("name", name($)),
         optional(
           seq(
             "=",
@@ -1027,6 +1048,7 @@ module.exports = grammar({
                     "<",
                     ">",
                     "<>",
+                    ...CONTROL_NAMES,
                   ),
                   $.instance_method_name,
                 ),
@@ -1039,7 +1061,10 @@ module.exports = grammar({
               // be reduced before the name after it is seen.
               prec.right(PRECEDENCE.call, seq(
                 alias("*", $.class_method_marker),
-                alias(choice($.identifier, /[a-z]/), $.class_method_name),
+                alias(
+                  choice($.identifier, /[a-z]/, ...CONTROL_NAMES),
+                  $.class_method_name,
+                ),
                 $.function_block,
               )),
             ),

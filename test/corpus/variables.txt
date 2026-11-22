@@ -177,3 +177,111 @@ var num3 = num1 + num2;
       right: (variable
         (local_var
           name: (identifier))))))
+
+================================================================================
+The control structures' names as variables and arguments
+================================================================================
+
+{ arg for, protect; this.value(for, protect) };
+{ |if, while = 3 ... try| if + while };
+{ var case = 1, switch = 2, forBy = 3; [case, switch, forBy] };
+f.value(a, for: 1, protect: 2);
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_block
+    (parameter_list
+      (argument
+        (identifier))
+      (argument
+        (identifier)))
+    (function_call
+      (variable
+        (local_var
+          (identifier)))
+      (method_call
+        (method_name)
+        (parameter_call_list
+          (argument_calls
+            (unnamed_argument
+              (variable
+                (local_var
+                  (identifier)))))
+          (argument_calls
+            (unnamed_argument
+              (variable
+                (local_var
+                  (identifier)))))))))
+  (function_block
+    (parameter_list
+      (pipe_parameter_list
+        (pipe_token)
+        (pipe_argument
+          (identifier))
+        (pipe_argument
+          (identifier)
+          (literal
+            (number
+              (integer))))
+        (argument
+          (identifier))
+        (pipe_token)))
+    (binary_expression
+      (variable
+        (local_var
+          (identifier)))
+      (variable
+        (local_var
+          (identifier)))))
+  (function_block
+    (variable_definition_sequence
+      (var_binding
+        (identifier)
+        (literal
+          (number
+            (integer))))
+      (var_binding
+        (identifier)
+        (literal
+          (number
+            (integer))))
+      (var_binding
+        (identifier)
+        (literal
+          (number
+            (integer)))))
+    (collection
+      (variable
+        (local_var
+          (identifier)))
+      (variable
+        (local_var
+          (identifier)))
+      (variable
+        (local_var
+          (identifier)))))
+  (function_call
+    (variable
+      (environment_var
+        (identifier)))
+    (method_call
+      (method_name)
+      (parameter_call_list
+        (argument_calls
+          (unnamed_argument
+            (variable
+              (environment_var
+                (identifier)))))
+        (argument_calls
+          (named_argument
+            (identifier)
+            (literal
+              (number
+                (integer)))))
+        (argument_calls
+          (named_argument
+            (identifier)
+            (literal
+              (number
+                (integer)))))))))
