@@ -398,3 +398,37 @@ and then, more items
             (unnamed_argument
               (literal
                 (string)))))))))
+
+================================================================================
+Strings side by side are one string
+================================================================================
+
+x = "one part, "
+    "and the rest";
+warn("a %" "b".format(1));
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (variable_definition
+    (variable
+      (environment_var
+        (identifier)))
+    (literal
+      (string)))
+  (function_call
+    (method_name)
+    (parameter_call_list
+      (argument_calls
+        (unnamed_argument
+          (function_call
+            (literal
+              (string))
+            (method_call
+              (method_name)
+              (parameter_call_list
+                (argument_calls
+                  (unnamed_argument
+                    (literal
+                      (number
+                        (integer)))))))))))))

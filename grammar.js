@@ -768,7 +768,11 @@ module.exports = grammar({
 
     char: $ => /\$(\\.|.)/,
 
-    string: $ =>
+    // Strings that stand side by side are one string to sclang:
+    // "one part, " "and the rest".
+    string: $ => prec.right(repeat1($._string_part)),
+
+    _string_part: $ =>
       seq(
         "\"",
         repeat(
@@ -1652,9 +1656,20 @@ module.exports = grammar({
 
     case: $ =>
       prec.left(
-        seq(
-          field("name", "case"),
-          repeat($.function_block),
+        choice(
+          // case { test } { body } ...
+          seq(
+            field("name", "case"),
+            repeat($.function_block),
+          ),
+          // case({ test }, { body }, ...): the same, written as a call
+          seq(
+            field("name", "case"),
+            "(",
+            sepBy(",", $._object),
+            optional(","),
+            ")",
+          ),
         ),
       ),
 

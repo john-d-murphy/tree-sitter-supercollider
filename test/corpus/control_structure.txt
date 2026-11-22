@@ -695,3 +695,57 @@ for(1, freq_bands + 1, { |n| n.postln });
               (identifier)))
           (method_call
             (method_name)))))))
+
+================================================================================
+case written as a call
+================================================================================
+
+y = case({ a }, { 1 }, { b }, { 2 });
+case (
+    { a }, { 1 },
+    { b }, { 2 }
+);
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (variable_definition
+    (variable
+      (environment_var
+        (identifier)))
+    (control_structure
+      (case
+        (function_block
+          (variable
+            (environment_var
+              (identifier))))
+        (function_block
+          (literal
+            (number
+              (integer))))
+        (function_block
+          (variable
+            (environment_var
+              (identifier))))
+        (function_block
+          (literal
+            (number
+              (integer)))))))
+  (control_structure
+    (case
+      (function_block
+        (variable
+          (environment_var
+            (identifier))))
+      (function_block
+        (literal
+          (number
+            (integer))))
+      (function_block
+        (variable
+          (environment_var
+            (identifier))))
+      (function_block
+        (literal
+          (number
+            (integer)))))))
