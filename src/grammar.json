@@ -4875,10 +4875,6 @@
                       },
                       {
                         "type": "SYMBOL",
-                        "name": "partial"
-                      },
-                      {
-                        "type": "SYMBOL",
                         "name": "duplicated_statement"
                       },
                       {
@@ -4942,10 +4938,6 @@
                             {
                               "type": "SYMBOL",
                               "name": "collection"
-                            },
-                            {
-                              "type": "SYMBOL",
-                              "name": "partial"
                             },
                             {
                               "type": "SYMBOL",
@@ -6128,6 +6120,10 @@
         {
           "type": "SYMBOL",
           "name": "nil_check"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "partial"
         }
       ]
     },

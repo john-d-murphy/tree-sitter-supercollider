@@ -1357,7 +1357,6 @@ module.exports = grammar({
         $.function_block,
         $.control_structure,
         $.collection,
-        $.partial,
         $.duplicated_statement,
         $.list_comprehension,
         $.ref_expression,
@@ -1516,6 +1515,8 @@ module.exports = grammar({
         $.code_block,
         $.indexed_collection,
         $.nil_check,
+        // `(1.._)`: the series up to whatever is passed
+        $.partial,
       ),
 
     ////////////////////

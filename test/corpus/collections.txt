@@ -862,3 +862,49 @@ A symbol as a key beside other keys
         (literal
           (number
             (float)))))))
+
+================================================================================
+The placeholder as a bound of a series
+================================================================================
+
+(1..8).collect((1.._));
+f = (_, 3.._);
+a[_.._];
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_call
+    (collection
+      (arithmetic_series
+        (number
+          (integer))
+        (number
+          (integer))))
+    (method_call
+      (method_name)
+      (parameter_call_list
+        (argument_calls
+          (unnamed_argument
+            (collection
+              (arithmetic_series
+                (number
+                  (integer))
+                (partial))))))))
+  (variable_definition
+    (variable
+      (environment_var
+        (identifier)))
+    (collection
+      (arithmetic_series
+        (partial)
+        (number
+          (integer))
+        (partial))))
+  (indexed_collection
+    (variable
+      (environment_var
+        (identifier)))
+    (index_subrange
+      (partial)
+      (partial))))
