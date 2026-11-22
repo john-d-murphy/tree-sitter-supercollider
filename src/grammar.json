@@ -935,6 +935,27 @@
                 "name": "variable_definition_sequence"
               },
               {
+                "type": "SEQ",
+                "members": [
+                  {
+                    "type": "SYMBOL",
+                    "name": "primitive"
+                  },
+                  {
+                    "type": "CHOICE",
+                    "members": [
+                      {
+                        "type": "STRING",
+                        "value": ";"
+                      },
+                      {
+                        "type": "BLANK"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
                 "type": "PREC_RIGHT",
                 "value": 1,
                 "content": {
@@ -955,8 +976,17 @@
           }
         },
         {
-          "type": "SYMBOL",
-          "name": "_expression"
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "SYMBOL",
+              "name": "_expression"
+            },
+            {
+              "type": "SYMBOL",
+              "name": "primitive"
+            }
+          ]
         },
         {
           "type": "CHOICE",
@@ -1148,6 +1178,17 @@
           "value": "}"
         }
       ]
+    },
+    "primitive": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PREC",
+        "value": 1,
+        "content": {
+          "type": "PATTERN",
+          "value": "_[A-Z][a-zA-Z\\d_]*"
+        }
+      }
     },
     "_function_content": {
       "type": "CHOICE",

@@ -1060,6 +1060,10 @@
           "named": true
         },
         {
+          "type": "primitive",
+          "named": true
+        },
+        {
           "type": "ref_expression",
           "named": true
         },
@@ -2439,6 +2443,10 @@
           },
           {
             "type": "partial",
+            "named": true
+          },
+          {
+            "type": "primitive",
             "named": true
           },
           {
@@ -5408,6 +5416,10 @@
   },
   {
     "type": "pipe_token",
+    "named": true
+  },
+  {
+    "type": "primitive",
     "named": true
   },
   {

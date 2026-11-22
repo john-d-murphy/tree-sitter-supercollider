@@ -253,3 +253,68 @@ Foo {
       (return_statement
         (literal
           (bool))))))
+
+================================================================================
+Primitive calls
+================================================================================
+
+Foo {
+    *new { arg maxSize;
+        _BasicNew
+        ^this.primitiveFailed
+    }
+    size {
+        _BasicSize
+    }
+    at { |i|
+        var x;
+        _BasicAt;
+        ^this.primitiveFailed;
+    }
+    one { _One }
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (class_def
+    (class)
+    (class_method_marker)
+    (class_method_name)
+    (function_block
+      (parameter_list
+        (argument
+          (identifier)))
+      (primitive)
+      (return_statement
+        (function_call
+          (variable
+            (local_var
+              (identifier)))
+          (method_call
+            (method_name)))))
+    (instance_method_name)
+    (function_block
+      (primitive))
+    (instance_method_name)
+    (function_block
+      (parameter_list
+        (pipe_parameter_list
+          (pipe_token)
+          (pipe_argument
+            (identifier))
+          (pipe_token)))
+      (variable_definition_sequence
+        (var_binding
+          (identifier)))
+      (primitive)
+      (return_statement
+        (function_call
+          (variable
+            (local_var
+              (identifier)))
+          (method_call
+            (method_name)))))
+    (instance_method_name)
+    (function_block
+      (primitive))))

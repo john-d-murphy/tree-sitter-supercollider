@@ -477,12 +477,15 @@ module.exports = grammar({
           choice(
             // variable_definition_sequence includes its own semicolon
             $.variable_definition_sequence,
+            // A primitive call needs no semicolon after it, and may have one
+            seq($.primitive, optional(";")),
             // Other expressions need semicolons added
             prec.right(1, seq($._expression, ";")),
           ),
         ),
-        // Final expression (no semicolon)
-        $._expression,
+        // Final expression (no semicolon), or, where a method is nothing but
+        // its primitive, that
+        choice($._expression, $.primitive),
         optional(";"),
       ),
 
@@ -524,6 +527,11 @@ module.exports = grammar({
         optional(field("body", $._expression_sequence)),
         "}",
       ),
+
+    // A call of a primitive: `_BasicNew`, on a line of its own at the head of
+    // a method. A name that begins with an underscore and a capital is always
+    // one; an identifier is the same length, so the precedence chooses.
+    primitive: $ => token(prec(1, /_[A-Z][a-zA-Z\d_]*/)),
 
     _function_content: $ =>
       choice(
