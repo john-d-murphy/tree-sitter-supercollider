@@ -226,6 +226,10 @@ module.exports = grammar({
     // is a list of one item: followed as far as it takes to tell.
     [$.local_var, $.instance_var, $.class_def],
 
+    // A line of variables that ends a file is one of the file's lines or its
+    // final expression.
+    [$.source_file, $._expression_statement],
+
     // Event vs code_block: (key: value) is event, (expr; expr) is code_block
     [$.event, $.code_block],
 
@@ -248,6 +252,13 @@ module.exports = grammar({
             choice(
               // A semicolon-terminated expression
               seq($._expression, ";"),
+              // A line of variables ends with a semicolon of its own, and
+              // code may follow it. Where it is the last thing in a file
+              // it is also the final expression below, and `var x = 1;` is
+              // also an expression and its semicolon: both are followed
+              // (see the conflicts), and the dynamic precedence leaves a
+              // file that parsed without this reading the tree it had.
+              prec.dynamic(-1, $.variable_definition_sequence),
               // A class definition or extension needs no semicolon after it:
               // a class file is one after another with nothing between. The
               // precedence settles a file that ends with one: it is this, not

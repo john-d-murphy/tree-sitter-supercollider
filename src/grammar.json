@@ -28,6 +28,14 @@
                     ]
                   },
                   {
+                    "type": "PREC_DYNAMIC",
+                    "value": -1,
+                    "content": {
+                      "type": "SYMBOL",
+                      "name": "variable_definition_sequence"
+                    }
+                  },
+                  {
                     "type": "PREC",
                     "value": 1,
                     "content": {
@@ -7549,6 +7557,10 @@
       "local_var",
       "instance_var",
       "class_def"
+    ],
+    [
+      "source_file",
+      "_expression_statement"
     ],
     [
       "event",
