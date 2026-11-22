@@ -7,15 +7,16 @@ Basic duplication
 )
 
 ---
+
 (source_file
   (code_block
     (duplicated_statement
       duplicated_object: (literal
         (number
-          (integer )))
+          (integer)))
       duplication_times: (literal
         (number
-          (hexinteger ))))))
+          (hexinteger))))))
 
 ====================
 Chained duplications
@@ -26,6 +27,7 @@ Chained duplications
 )
 
 ---
+
 (source_file
   (code_block
     (duplicated_statement
@@ -53,8 +55,8 @@ train = "choo" ! 2;
 
 (source_file
   (code_block
-    (variable
-      (local_var
+    (variable_definition_sequence
+      (var_binding
         name: (identifier)))
     (variable_definition
       name: (variable
@@ -67,7 +69,6 @@ train = "choo" ! 2;
           (number
             (integer)))))))
 
-
 ====================
 duplication as function call argument
 ====================
@@ -78,12 +79,11 @@ duplication as function call argument
 
 (source_file
   (function_block
-    (function_call
-      (receiver
-        (class))
+    body: (function_call
+      receiver: (class)
       (method_call
         name: (method_name)
-        (parameter_call_list
+        arguments: (parameter_call_list
           (argument_calls
             (unnamed_argument
               (duplicated_statement
@@ -125,16 +125,17 @@ partial: [a, b, _]
 [a, b, _];
 )
 ---
+
 (source_file
   (code_block
     (collection
       (variable
         (environment_var
-          name: (identifier )))
+          name: (identifier)))
       (variable
         (environment_var
-          name: (identifier )))
-      (partial ))))
+          name: (identifier)))
+      (partial))))
 
 ====================
 partial: object.msg(a, _, _)
@@ -147,24 +148,23 @@ object.msg(a, _, _);
 (source_file
   (code_block
     (function_call
-      (receiver
-        (variable
-          (local_var
-            name: (identifier ))))
+      receiver: (variable
+        (local_var
+          name: (identifier)))
       (method_call
-        name: (method_name )
-        (parameter_call_list
+        name: (method_name)
+        arguments: (parameter_call_list
           (argument_calls
             (unnamed_argument
               (variable
                 (environment_var
-                  name: (identifier )))))
+                  name: (identifier)))))
           (argument_calls
             (unnamed_argument
-              (partial )))
+              (partial)))
           (argument_calls
             (unnamed_argument
-              (partial ))))))))
+              (partial))))))))
 
 ====================
 partial: a + _
@@ -179,5 +179,5 @@ a + _;
     (binary_expression
       left: (variable
         (environment_var
-          name: (identifier )))
+          name: (identifier)))
       right: (partial))))

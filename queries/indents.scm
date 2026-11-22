@@ -10,7 +10,7 @@
   (const)
   (instance_var)
   (variable_definition)
-  (variable_definition_sequence (variable_definition))
+  (variable_definition_sequence)
   (control_structure)
   (return_statement)
 ] @indent
