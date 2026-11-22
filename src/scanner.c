@@ -8,8 +8,15 @@ enum TokenType {
   GENERATOR_ARROW,  // <- for list comprehensions
   EVENT_KEY,        // identifier: for event literals
   STRING_CONTENT,   // a string's text, up to its closing quote or a backslash
-  ERROR_SENTINEL    // never produced: valid only while an error is recovered
+  ERROR_SENTINEL,   // never produced: valid only while an error is recovered
+  PIPE_TOKEN,       // | with no operator character directly after it
+  EQUALS            // = with no operator character directly after it
 };
+
+// What sclang's lexer reads as part of an operator (PyrLexer.cpp, binopchars).
+static bool is_operator_char(int32_t c) {
+  return c != 0 && c < 128 && strchr("!@%&*-+=|<>?/", c) != NULL;
+}
 
 void *tree_sitter_supercollider_external_scanner_create() { return NULL; }
 void tree_sitter_supercollider_external_scanner_destroy(void *p) {}
@@ -48,6 +55,22 @@ bool tree_sitter_supercollider_external_scanner_scan(
   while (iswspace(lexer->lookahead))
     lexer->advance(lexer, true);
 
+  // A pipe, or an equals sign, when no operator character follows it
+  // directly. sclang's lexer reads a run of operator characters as one
+  // operator wherever it stands, so `|-` and `=-` are operators, and `|/*`
+  // too: no comment opens in the middle of a run. Where the grammar wants a
+  // pipe or an equals sign such a run is an error, as it is to sclang.
+  if ((valid_symbols[PIPE_TOKEN] && lexer->lookahead == '|') ||
+      (valid_symbols[EQUALS] && lexer->lookahead == '=')) {
+    enum TokenType token = lexer->lookahead == '|' ? PIPE_TOKEN : EQUALS;
+    advance(lexer);
+    if (is_operator_char(lexer->lookahead))
+      return false;
+    lexer->mark_end(lexer);
+    lexer->result_symbol = token;
+    return true;
+  }
+
   // Event key: an identifier with its colon directly after it (`freq:`),
   // which is one token to sclang (KEYBINOP) and names a symbol. With a blank
   // between them (`freq : 1`) the name is a variable and the colon stands
@@ -80,7 +103,7 @@ bool tree_sitter_supercollider_external_scanner_scan(
     if (lexer->lookahead == '-') {
       advance(lexer);
       // A longer run of operator characters is an operator: `a <-- b`.
-      if (lexer->lookahead != 0 && strchr("!@%&*-+=|<>?/", lexer->lookahead))
+      if (is_operator_char(lexer->lookahead))
         return false;
       lexer->mark_end(lexer);
       lexer->result_symbol = GENERATOR_ARROW;

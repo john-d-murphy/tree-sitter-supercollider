@@ -4337,10 +4337,6 @@
             "named": true
           },
           {
-            "type": "pipe_safe_nil_check",
-            "named": true
-          },
-          {
             "type": "pipe_safe_unary_expression",
             "named": true
           },
@@ -4396,77 +4392,6 @@
     }
   },
   {
-    "type": "pipe_safe_nil_check",
-    "named": true,
-    "fields": {},
-    "children": {
-      "multiple": true,
-      "required": true,
-      "types": [
-        {
-          "type": "association",
-          "named": true
-        },
-        {
-          "type": "class",
-          "named": true
-        },
-        {
-          "type": "code_block",
-          "named": true
-        },
-        {
-          "type": "collection",
-          "named": true
-        },
-        {
-          "type": "control_structure",
-          "named": true
-        },
-        {
-          "type": "duplicated_statement",
-          "named": true
-        },
-        {
-          "type": "event",
-          "named": true
-        },
-        {
-          "type": "function_block",
-          "named": true
-        },
-        {
-          "type": "function_call",
-          "named": true
-        },
-        {
-          "type": "indexed_collection",
-          "named": true
-        },
-        {
-          "type": "literal",
-          "named": true
-        },
-        {
-          "type": "partial",
-          "named": true
-        },
-        {
-          "type": "pipe_safe_nil_check",
-          "named": true
-        },
-        {
-          "type": "pipe_safe_unary_expression",
-          "named": true
-        },
-        {
-          "type": "variable",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
     "type": "pipe_safe_unary_expression",
     "named": true,
     "fields": {
@@ -4475,19 +4400,7 @@
         "required": true,
         "types": [
           {
-            "type": "!",
-            "named": false
-          },
-          {
-            "type": "*",
-            "named": false
-          },
-          {
             "type": "-",
-            "named": false
-          },
-          {
-            "type": ":",
             "named": false
           }
         ]
@@ -4497,59 +4410,7 @@
         "required": true,
         "types": [
           {
-            "type": "association",
-            "named": true
-          },
-          {
-            "type": "class",
-            "named": true
-          },
-          {
-            "type": "code_block",
-            "named": true
-          },
-          {
-            "type": "collection",
-            "named": true
-          },
-          {
-            "type": "control_structure",
-            "named": true
-          },
-          {
-            "type": "duplicated_statement",
-            "named": true
-          },
-          {
-            "type": "event",
-            "named": true
-          },
-          {
-            "type": "function_block",
-            "named": true
-          },
-          {
-            "type": "function_call",
-            "named": true
-          },
-          {
-            "type": "indexed_collection",
-            "named": true
-          },
-          {
             "type": "literal",
-            "named": true
-          },
-          {
-            "type": "partial",
-            "named": true
-          },
-          {
-            "type": "pipe_safe_nil_check",
-            "named": true
-          },
-          {
-            "type": "pipe_safe_unary_expression",
             "named": true
           },
           {
@@ -6399,6 +6260,10 @@
   },
   {
     "type": "nil",
+    "named": false
+  },
+  {
+    "type": "number",
     "named": false
   },
   {

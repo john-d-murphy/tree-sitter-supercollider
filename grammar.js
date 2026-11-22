@@ -193,6 +193,24 @@ function seriesPart($) {
   );
 }
 
+// The equals sign of an assignment or a default, which the scanner reads
+// (see the externals). It is the node `=` it always was.
+function equals($) {
+  return alias($._equals, "=");
+}
+
+// A literal as sclang's grammar has one for a default (lang11d:
+// slotliteral): a number, negative or not, a character, a string, a symbol,
+// true, false, nil, inf, or a literal array.
+function slotLiteral($) {
+  return choice(
+    $.literal,
+    $.pipe_safe_unary_expression,
+    alias(alias(choice("nil", "inf"), $.builtin_var), $.variable),
+    alias(literalArray($), $.collection),
+  );
+}
+
 function sepBy1(sep, rule) {
   return seq(rule, repeat(seq(sep, rule)));
 }
@@ -213,6 +231,11 @@ module.exports = grammar({
     $.event_key, // identifier: for event literals
     $._string_content, // a string's text: no comment opens inside it
     $._error_sentinel, // never used: valid only while an error is recovered
+    // A pipe and an equals sign are those only where no operator character
+    // follows them directly: to sclang's lexer `|-`, `=-` and `|/*` are each
+    // one operator, wherever they stand. Only the scanner can look ahead.
+    $.pipe_token,
+    $._equals,
   ],
 
   // The name of a token that will match keywords for the purpose of the keyword extraction optimization.
@@ -247,7 +270,6 @@ module.exports = grammar({
     // block-style vs surrounding expression / nested switch
     // [$.switch],
 
-    [$._object, $._pipe_safe_expression],
     [$._expression_statement, $._object],
     [$.instance_var, $.var_binding],
 
@@ -295,6 +317,7 @@ module.exports = grammar({
     // expression and `(a; b .. c)` a series: which it is shows only at the
     // colon or the two dots.
     [$._expression_statement, $.associative_item, $.arithmetic_series],
+    [$._expression_statement, $.associative_item],
     [$.associative_item, $.arithmetic_series],
     [$.ref_expression, $.associative_item, $.arithmetic_series],
   ],
@@ -449,7 +472,7 @@ module.exports = grammar({
         seq(
           "var",
           field("name", $.identifier),
-          "=",
+          equals($),
           field("value", $._object),
         ),
       ),
@@ -499,7 +522,7 @@ module.exports = grammar({
         1,
         seq(
           field("name", $.variable),
-          "=",
+          equals($),
           field("value", $.function_block),
         ),
       ),
@@ -801,63 +824,23 @@ module.exports = grammar({
     // `= value`, or the older `name(value)`
     argument_default: $ =>
       choice(
-        seq("=", field("value", $._expression)),
+        seq(equals($), field("value", $._expression)),
         seq("(", field("value", $._expression), ")"),
       ),
 
-    // Safe expressions that cannot contain | as a binary operator
-    _pipe_safe_expression: $ =>
-      choice(
-        $.literal,
-        $.variable,
-        $.function_call,
-        $.function_block,
-        $.code_block,
-        $.collection,
-        $.indexed_collection,
-        $.partial,
-        $.duplicated_statement,
-        $.pipe_safe_unary_expression,
-        $.pipe_safe_nil_check,
-        $.association,
-        $.control_structure,
-        $.event,
-        prec(2, $.class),
-      ),
-
-    // Unary expressions that use safe expressions (no | binary op)
-    pipe_safe_unary_expression: $ => {
-      const table = [
-        [PRECEDENCE.unary, "-"],
-        [PRECEDENCE.unary, "*"],
-        [PRECEDENCE.unary, ":"],
-        [PRECEDENCE.unary, "!"],
-      ];
-
-      return choice(
-        ...table.map(([precedence, operator]) =>
-          prec.left(
-            precedence,
-            seq(
-              field("operator", operator),
-              field("right", $._pipe_safe_expression),
-            ),
-          )
-        ),
-      );
-    },
-
-    // Nil check that uses safe expressions (no | binary op)
-    pipe_safe_nil_check: $ =>
-      prec.left(
-        seq(
-          $._pipe_safe_expression,
-          choice("?", "!?", "??"),
-          $._pipe_safe_expression,
+    // A negative number as a default: `|a = -1|`, `|a -inf|`.
+    pipe_safe_unary_expression: $ =>
+      seq(
+        field("operator", "-"),
+        field(
+          "right",
+          choice($.literal, alias(alias("inf", $.builtin_var), $.variable)),
         ),
       ),
 
-    // Pipe argument uses restricted expressions
+    // Between pipes a default is a literal or an expression in parentheses,
+    // and nothing else (lang11d: slotdef). `|a = b|` and `|a = 1 + 2|` are
+    // errors to sclang, and are errors here.
     pipe_argument: $ =>
       seq(
         field("name", name($)),
@@ -865,16 +848,12 @@ module.exports = grammar({
           "value",
           optional(
             choice(
-              seq("=", $._pipe_safe_expression),
+              seq(equals($), choice(slotLiteral($), $.code_block)),
               // the older `name(value)`
               seq("(", $._expression, ")"),
-              // before a literal or its negative the equals sign may be
-              // left out: `|start = 0, range -1|`. nil, inf and a literal
-              // array are literals here as well.
-              $.literal,
-              $.pipe_safe_unary_expression,
-              alias(alias(choice("nil", "inf"), $.builtin_var), $.variable),
-              alias(literalArray($), $.collection),
+              // before a literal the equals sign may be left out:
+              // `|start = 0, range -1|`
+              slotLiteral($),
             ),
           ),
         ),
@@ -911,7 +890,21 @@ module.exports = grammar({
 
     // function call is added here to allow things like Array() in params
     // Also allows statement sequences like foo(a; b; c) where the value is c
-    unnamed_argument: $ => expressionSequence($),
+    unnamed_argument: $ =>
+      choice(
+        expressionSequence($),
+        // `*args`: an array handed on as the arguments it holds. sclang has
+        // the star here and nowhere else (lang11d: arglistv1).
+        seq(
+          alias($._starred, $.unary_expression),
+          repeat(seq(";", $._object)),
+          optional(";"),
+        ),
+      ),
+
+    // The node is the unary_expression it was when the star was an operator
+    // of any expression.
+    _starred: $ => seq(field("operator", "*"), field("right", $._object)),
 
     named_argument: $ =>
       prec.left(
@@ -921,7 +914,7 @@ module.exports = grammar({
           choice(
             seq(
               choice($.symbol, name($)),
-              choice("=", ":"),
+              choice(equals($), ":"),
               expressionSequence($),
             ),
             // Single-letter names lex as environment_var's /[a-z]/ token,
@@ -1102,7 +1095,7 @@ module.exports = grammar({
         optional(
           choice(
             seq(
-              "=",
+              equals($),
               field("value", choice($.class, $._object)),
             ),
             // the older `name(value)`
@@ -1127,7 +1120,7 @@ module.exports = grammar({
         PRECEDENCE.vardef,
         seq(
           field("name", $.variable),
-          "=",
+          equals($),
           field("value", choice($.class, $._object)),
         ),
       ),
@@ -1148,7 +1141,7 @@ module.exports = grammar({
             // Without rest: # a, b, c = value
             sepBy1(",", field("name", $.identifier)),
           ),
-          "=",
+          equals($),
           field("value", $._object),
         ),
       ),
@@ -1197,7 +1190,7 @@ module.exports = grammar({
                         $.instance_var,
                         $.classvar,
                       ),
-                      "=",
+                      equals($),
                       $._object,
                     ),
                   ),
@@ -1208,13 +1201,13 @@ module.exports = grammar({
               // be left out (lang11d: constdeflist optcomma constdef).
               seq(
                 $.const,
-                "=",
+                equals($),
                 $._object,
                 repeat(
                   seq(
                     optional(","),
                     choice(alias($.local_var, $.instance_var), $.instance_var),
-                    "=",
+                    equals($),
                     $._object,
                   ),
                 ),
@@ -1571,6 +1564,19 @@ module.exports = grammar({
           /[a-z]/,
           alias($.identifier, "name"),
           /-?[0-9]+/,
+          // Any other number is read whole here as it is everywhere, so
+          // that `a +.2b` is the accidental sclang's lexer makes of it and
+          // not an integer and a name.
+          alias(
+            choice(
+              $.float,
+              $.hexinteger,
+              $.radix_integer,
+              $.exponential,
+              $.accidental,
+            ),
+            "number",
+          ),
           seq("(", expressionSequence($), ")"),
         ),
       ),
@@ -1604,7 +1610,7 @@ module.exports = grammar({
           PRECEDENCE.multiplicative,
           choice("*", "/", "%", prec.left("**")),
         ],
-        [PRECEDENCE.assign, "="],
+        [PRECEDENCE.assign, equals($)],
 
         // String concatenation
         [PRECEDENCE.stringConcat, "+/+"],
@@ -1636,7 +1642,6 @@ module.exports = grammar({
     unary_expression: $ => {
       const table = [
         [PRECEDENCE.unary, "-"],
-        [PRECEDENCE.unary, "*"],
         // (:1..) style
         [PRECEDENCE.unary, ":"],
         [PRECEDENCE.unary, "!"],
@@ -2063,7 +2068,6 @@ module.exports = grammar({
           ),
         ),
       ),
-    pipe_token: $ => "|",
     // generator_arrow is defined in externals, handled by src/scanner.c
     _operator: $ => OPERATOR,
   },
