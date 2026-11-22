@@ -1149,3 +1149,32 @@ parenthesized operator as callee with partial application
     (literal
       (number
         (integer)))))
+
+================================================================================
+The routine shorthand: a one-letter name called with a block
+================================================================================
+
+x = r { 1.yield; 2.yield };
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (variable_definition
+    (variable
+      (environment_var
+        (identifier)))
+    (function_call
+      (method_name)
+      (function_block
+        (function_call
+          (literal
+            (number
+              (integer)))
+          (method_call
+            (method_name)))
+        (function_call
+          (literal
+            (number
+              (integer)))
+          (method_call
+            (method_name)))))))

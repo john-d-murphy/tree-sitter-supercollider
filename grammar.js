@@ -391,9 +391,17 @@ module.exports = grammar({
               ),
             ),
           ),
-          // Function call with trailing block: fork { }, Routine { }, Task { }
+          // Function call with trailing block: fork { }, Routine { }, Task { },
+          // and `r { }` (a one-letter name is a token of its own)
           seq(
-            field("callee", choice(alias($.identifier, $.method_name), $.class)),
+            field(
+              "callee",
+              choice(
+                alias($.identifier, $.method_name),
+                alias(/[a-z]/, $.method_name),
+                $.class,
+              ),
+            ),
             field("block", $.function_block),
           ),
           // Function call with trailing list comprehension: all {: x, x <- (1..10) }
