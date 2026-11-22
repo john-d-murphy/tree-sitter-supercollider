@@ -908,3 +908,96 @@ a[_.._];
     (index_subrange
       (partial)
       (partial))))
+
+================================================================================
+A comprehension with space between its brace and colon
+================================================================================
+
+{ : x, x <- (1..5) };
+Pbind(\degree, p { :[x, y].postln, x<-(0..10), y<-(0..10), (x + y).isPrime }, \dur, 0.3);
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (list_comprehension
+    (variable
+      (environment_var
+        (identifier)))
+    (comprehension_generator
+      (variable
+        (environment_var
+          (identifier)))
+      (generator_arrow)
+      (collection
+        (arithmetic_series
+          (number
+            (integer))
+          (number
+            (integer))))))
+  (function_call
+    (class)
+    (parameter_call_list
+      (argument_calls
+        (unnamed_argument
+          (literal
+            (symbol
+              (identifier)))))
+      (argument_calls
+        (unnamed_argument
+          (function_call
+            (method_name)
+            (list_comprehension
+              (function_call
+                (collection
+                  (variable
+                    (environment_var
+                      (identifier)))
+                  (variable
+                    (environment_var
+                      (identifier))))
+                (method_call
+                  (method_name)))
+              (comprehension_generator
+                (variable
+                  (environment_var
+                    (identifier)))
+                (generator_arrow)
+                (collection
+                  (arithmetic_series
+                    (number
+                      (integer))
+                    (number
+                      (integer)))))
+              (comprehension_generator
+                (variable
+                  (environment_var
+                    (identifier)))
+                (generator_arrow)
+                (collection
+                  (arithmetic_series
+                    (number
+                      (integer))
+                    (number
+                      (integer)))))
+              (comprehension_filter
+                (function_call
+                  (code_block
+                    (binary_expression
+                      (variable
+                        (environment_var
+                          (identifier)))
+                      (variable
+                        (environment_var
+                          (identifier)))))
+                  (method_call
+                    (method_name))))))))
+      (argument_calls
+        (unnamed_argument
+          (literal
+            (symbol
+              (identifier)))))
+      (argument_calls
+        (unnamed_argument
+          (literal
+            (number
+              (float))))))))

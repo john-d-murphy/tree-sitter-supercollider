@@ -334,9 +334,11 @@ module.exports = grammar({
     //   {: x, x <- (1..3), y <- (1..x) }
     //   {: z, x <- (1..20), var z = (x*x-x) div: 2, z.odd }
     //   {:x, x<-(1..), :: "side effect".postln }
+    //   { : x, x <- (1..3) }  (space may stand between the brace and the
+    //   colon; it is still the one token that opens a comprehension)
     list_comprehension: $ =>
       seq(
-        "{:",
+        alias(token(seq("{", /\s*/, ":")), "{:"),
         field("body", $._object),
         ",",
         sepBy1(",", $._comprehension_clause),
