@@ -274,6 +274,25 @@ module.exports = grammar({
     // expr.if(func, func) vs expr.if(obj, obj)
     [$._object, $.if],
 
+    // A control structure's name may be called like any other name
+    // (`if(a)`, `for { a }`, `x.if(a)`, `3.for(7) { }`): its own rule and
+    // the plain call are both followed, and where both fit to the end, its
+    // own rule is taken (the plain call's dynamic precedence is the lower).
+    [$.unnamed_argument, $.if],
+    [$.unnamed_argument, $.for],
+    [$.unnamed_argument, $.forby],
+    [$.unnamed_argument, $.case],
+    [$.unnamed_argument, $.switch],
+    [$.unnamed_argument, $.protect],
+    [$.unnamed_argument, $.try],
+    [$.function_call, $.while],
+    [$.function_call, $.protect],
+    [$.function_call, $.try],
+    [$.method_call, $.if],
+    // `3.for(7, { })` is the for rule's and `3.format` a method call: the
+    // integer is the rule's own or a number, as what follows the dot says.
+    [$.number, $.for, $.forby],
+
     // `(a; b)` is statements and `(a; b : c)` a dictionary keyed by an
     // expression: which it is shows only at the colon.
     [$._expression_statement, $.associative_item],
@@ -530,6 +549,32 @@ module.exports = grammar({
             ),
             blockList($),
           ),
+          // A control structure's name is a name like any other to sclang:
+          // written in a way its own rule below does not know (`if(a)`,
+          // `for { a }`), the call is a plain call.
+          // The precedences, static and dynamic, are under every other: where
+          // its own rule fits, that is what is read.
+          prec.dynamic(
+            -1,
+            prec(
+              -1,
+              seq(
+                field(
+                  "callee",
+                  alias(choice(...CONTROL_NAMES), $.method_name),
+                ),
+                choice(
+                  seq(
+                    "(",
+                    optional(field("arguments", $.parameter_call_list)),
+                    ")",
+                    optional(blockList($)),
+                  ),
+                  blockList($),
+                ),
+              ),
+            ),
+          ),
           // Parenthesized binary operator as callee: (+++)(a, 99, _)
           // sclang lang11d msgsend: '(' binop2 ')' '(' arglist ')' blocklist
           // and '(' binop2 ')' blocklist1.
@@ -576,8 +621,8 @@ module.exports = grammar({
       prec.left(
         seq(
           ".",
-          // A method may be called by a control structure's name. `if` is
-          // not among them here: `x.if ...` is the if rule's own.
+          // A method may be called by a control structure's name. Where
+          // `x.if ...` is written as the if rule knows it, it is that rule's.
           field(
             "name",
             choice(
@@ -585,6 +630,7 @@ module.exports = grammar({
               ...CONTROL_NAMES
                 .filter(word => word != "if")
                 .map(word => alias(word, $.method_name)),
+              prec.dynamic(-20, alias("if", $.method_name)),
             ),
           ),
           // receiver.method(args...) or receiver.method { ... }
@@ -1734,7 +1780,6 @@ module.exports = grammar({
         prec.dynamic(
           1000, // <- VERY high dynamic precedence
           prec.right(
-            100,
             seq(
               field("name", "if"),
               "(",
@@ -1896,7 +1941,8 @@ module.exports = grammar({
         // start.for(end, func)
         seq(
           $.integer,
-          ".for",
+          ".",
+          "for",
           "(",
           $.integer,
           ",",
@@ -1906,7 +1952,8 @@ module.exports = grammar({
         // start.for(end, step, func)
         seq(
           $.integer,
-          ".for",
+          ".",
+          "for",
           "(",
           $.integer,
           ",",
@@ -1947,7 +1994,7 @@ module.exports = grammar({
         // startValue.forBy ( endValue, stepValue, function );
         seq(
           $.integer,
-          field("name", ".forBy"),
+          field("name", seq(".", "forBy")),
           "(",
           $.integer,
           ",",

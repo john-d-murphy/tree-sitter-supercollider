@@ -932,6 +932,191 @@
             ]
           },
           {
+            "type": "PREC_DYNAMIC",
+            "value": -1,
+            "content": {
+              "type": "PREC",
+              "value": -1,
+              "content": {
+                "type": "SEQ",
+                "members": [
+                  {
+                    "type": "FIELD",
+                    "name": "callee",
+                    "content": {
+                      "type": "ALIAS",
+                      "content": {
+                        "type": "CHOICE",
+                        "members": [
+                          {
+                            "type": "STRING",
+                            "value": "if"
+                          },
+                          {
+                            "type": "STRING",
+                            "value": "while"
+                          },
+                          {
+                            "type": "STRING",
+                            "value": "for"
+                          },
+                          {
+                            "type": "STRING",
+                            "value": "forBy"
+                          },
+                          {
+                            "type": "STRING",
+                            "value": "case"
+                          },
+                          {
+                            "type": "STRING",
+                            "value": "switch"
+                          },
+                          {
+                            "type": "STRING",
+                            "value": "protect"
+                          },
+                          {
+                            "type": "STRING",
+                            "value": "try"
+                          }
+                        ]
+                      },
+                      "named": true,
+                      "value": "method_name"
+                    }
+                  },
+                  {
+                    "type": "CHOICE",
+                    "members": [
+                      {
+                        "type": "SEQ",
+                        "members": [
+                          {
+                            "type": "STRING",
+                            "value": "("
+                          },
+                          {
+                            "type": "CHOICE",
+                            "members": [
+                              {
+                                "type": "FIELD",
+                                "name": "arguments",
+                                "content": {
+                                  "type": "SYMBOL",
+                                  "name": "parameter_call_list"
+                                }
+                              },
+                              {
+                                "type": "BLANK"
+                              }
+                            ]
+                          },
+                          {
+                            "type": "STRING",
+                            "value": ")"
+                          },
+                          {
+                            "type": "CHOICE",
+                            "members": [
+                              {
+                                "type": "SEQ",
+                                "members": [
+                                  {
+                                    "type": "CHOICE",
+                                    "members": [
+                                      {
+                                        "type": "FIELD",
+                                        "name": "block",
+                                        "content": {
+                                          "type": "SYMBOL",
+                                          "name": "function_block"
+                                        }
+                                      },
+                                      {
+                                        "type": "FIELD",
+                                        "name": "comprehension",
+                                        "content": {
+                                          "type": "SYMBOL",
+                                          "name": "list_comprehension"
+                                        }
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "type": "REPEAT",
+                                    "content": {
+                                      "type": "CHOICE",
+                                      "members": [
+                                        {
+                                          "type": "SYMBOL",
+                                          "name": "function_block"
+                                        },
+                                        {
+                                          "type": "SYMBOL",
+                                          "name": "list_comprehension"
+                                        }
+                                      ]
+                                    }
+                                  }
+                                ]
+                              },
+                              {
+                                "type": "BLANK"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "type": "SEQ",
+                        "members": [
+                          {
+                            "type": "CHOICE",
+                            "members": [
+                              {
+                                "type": "FIELD",
+                                "name": "block",
+                                "content": {
+                                  "type": "SYMBOL",
+                                  "name": "function_block"
+                                }
+                              },
+                              {
+                                "type": "FIELD",
+                                "name": "comprehension",
+                                "content": {
+                                  "type": "SYMBOL",
+                                  "name": "list_comprehension"
+                                }
+                              }
+                            ]
+                          },
+                          {
+                            "type": "REPEAT",
+                            "content": {
+                              "type": "CHOICE",
+                              "members": [
+                                {
+                                  "type": "SYMBOL",
+                                  "name": "function_block"
+                                },
+                                {
+                                  "type": "SYMBOL",
+                                  "name": "list_comprehension"
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          {
             "type": "SEQ",
             "members": [
               {
@@ -1261,6 +1446,19 @@
                   },
                   "named": true,
                   "value": "method_name"
+                },
+                {
+                  "type": "PREC_DYNAMIC",
+                  "value": -20,
+                  "content": {
+                    "type": "ALIAS",
+                    "content": {
+                      "type": "STRING",
+                      "value": "if"
+                    },
+                    "named": true,
+                    "value": "method_name"
+                  }
                 }
               ]
             }
@@ -7582,7 +7780,7 @@
           "value": 1000,
           "content": {
             "type": "PREC_RIGHT",
-            "value": 100,
+            "value": 0,
             "content": {
               "type": "SEQ",
               "members": [
@@ -8205,7 +8403,11 @@
             },
             {
               "type": "STRING",
-              "value": ".for"
+              "value": "."
+            },
+            {
+              "type": "STRING",
+              "value": "for"
             },
             {
               "type": "STRING",
@@ -8238,7 +8440,11 @@
             },
             {
               "type": "STRING",
-              "value": ".for"
+              "value": "."
+            },
+            {
+              "type": "STRING",
+              "value": "for"
             },
             {
               "type": "STRING",
@@ -8384,8 +8590,17 @@
               "type": "FIELD",
               "name": "name",
               "content": {
-                "type": "STRING",
-                "value": ".forBy"
+                "type": "SEQ",
+                "members": [
+                  {
+                    "type": "STRING",
+                    "value": "."
+                  },
+                  {
+                    "type": "STRING",
+                    "value": "forBy"
+                  }
+                ]
               }
             },
             {
@@ -8787,6 +9002,55 @@
     [
       "_object",
       "if"
+    ],
+    [
+      "unnamed_argument",
+      "if"
+    ],
+    [
+      "unnamed_argument",
+      "for"
+    ],
+    [
+      "unnamed_argument",
+      "forby"
+    ],
+    [
+      "unnamed_argument",
+      "case"
+    ],
+    [
+      "unnamed_argument",
+      "switch"
+    ],
+    [
+      "unnamed_argument",
+      "protect"
+    ],
+    [
+      "unnamed_argument",
+      "try"
+    ],
+    [
+      "function_call",
+      "while"
+    ],
+    [
+      "function_call",
+      "protect"
+    ],
+    [
+      "function_call",
+      "try"
+    ],
+    [
+      "method_call",
+      "if"
+    ],
+    [
+      "number",
+      "for",
+      "forby"
     ],
     [
       "_expression_statement",
