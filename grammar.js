@@ -1644,7 +1644,8 @@ module.exports = grammar({
 
     for: $ =>
       choice(
-        // for(start, end, func) — start/end may be arbitrary expressions
+        // for(start, end, func) — start, end and the function may be
+        // arbitrary expressions
         seq(
           "for",
           "(",
@@ -1652,8 +1653,18 @@ module.exports = grammar({
           ",",
           $._object,
           ",",
-          $.function_block,
+          $._object,
           ")",
+        ),
+        // for(start, end) { func }
+        seq(
+          "for",
+          "(",
+          $._object,
+          ",",
+          $._object,
+          ")",
+          $.function_block,
         ),
         // for(start, end, step, func)
         seq(
@@ -1668,8 +1679,6 @@ module.exports = grammar({
           $.function_block,
           ")",
         ),
-        // NOTE: for(start, end) { func } trailing block form intentionally not supported
-        // due to grammar conflict with integer/number. Use for(start, end, { func }) instead.
         // start.for(end, func)
         seq(
           $.integer,
@@ -1718,7 +1727,7 @@ module.exports = grammar({
           ",",
           $._object,
           ",",
-          $.function_block,
+          $._object,
           ")",
         ),
         // startValue.forBy ( endValue, stepValue, function );

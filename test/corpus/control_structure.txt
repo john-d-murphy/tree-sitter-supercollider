@@ -861,3 +861,66 @@ x.switch.case.protect { 1 }.try(2);
             (literal
               (number
                 (integer)))))))))
+
+================================================================================
+for and forBy given a function by name, or a block after the parentheses
+================================================================================
+
+for(start, start + size - 1, function);
+forBy(start, end, step, function);
+for(3, 7) { arg i; i.postln };
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (control_structure
+    (for
+      (variable
+        (local_var
+          (identifier)))
+      (binary_expression
+        (binary_expression
+          (variable
+            (local_var
+              (identifier)))
+          (variable
+            (local_var
+              (identifier))))
+        (literal
+          (number
+            (integer))))
+      (variable
+        (local_var
+          (identifier)))))
+  (control_structure
+    (forby
+      (variable
+        (local_var
+          (identifier)))
+      (variable
+        (local_var
+          (identifier)))
+      (variable
+        (local_var
+          (identifier)))
+      (variable
+        (local_var
+          (identifier)))))
+  (control_structure
+    (for
+      (literal
+        (number
+          (integer)))
+      (literal
+        (number
+          (integer)))
+      (function_block
+        (parameter_list
+          (argument
+            (identifier)))
+        (function_call
+          (variable
+            (environment_var
+              (identifier)))
+          (method_call
+            (method_name)))))))
