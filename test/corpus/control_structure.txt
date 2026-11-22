@@ -749,3 +749,28 @@ case (
         (literal
           (number
             (integer)))))))
+
+================================================================================
+while with only a test, in parentheses
+================================================================================
+
+while ({ x < 3 });
+while(true);
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (control_structure
+    (while
+      (function_block
+        (binary_expression
+          (variable
+            (environment_var
+              (identifier)))
+          (literal
+            (number
+              (integer)))))))
+  (control_structure
+    (while
+      (literal
+        (bool)))))

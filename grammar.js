@@ -1614,7 +1614,8 @@ module.exports = grammar({
             field("test_func", $.function_block),
           ),
         ),
-        // while (expr) { body }
+        // while (expr) { body }, and, where the test does all there is to
+        // do, while (expr)
         prec.left(
           1,
           seq(
@@ -1622,7 +1623,7 @@ module.exports = grammar({
             "(",
             field("expression", $._object),
             ")",
-            field("body_func", $.function_block),
+            optional(field("body_func", $.function_block)),
           ),
         ),
       ),

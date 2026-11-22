@@ -6401,12 +6401,20 @@
                 "value": ")"
               },
               {
-                "type": "FIELD",
-                "name": "body_func",
-                "content": {
-                  "type": "SYMBOL",
-                  "name": "function_block"
-                }
+                "type": "CHOICE",
+                "members": [
+                  {
+                    "type": "FIELD",
+                    "name": "body_func",
+                    "content": {
+                      "type": "SYMBOL",
+                      "name": "function_block"
+                    }
+                  },
+                  {
+                    "type": "BLANK"
+                  }
+                ]
               }
             ]
           }
