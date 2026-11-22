@@ -1,0 +1,181 @@
+==================
+An operator is any run of operator characters
+==================
+a <-- b;
+a ---> b;
+a <! b;
+a <<* b;
+a *- 1;
+a =- 1;
+a |==| b;
+a +// b;
+---
+
+(source_file
+  (binary_expression
+    (variable
+      (environment_var
+        (identifier)))
+    (operator)
+    (variable
+      (environment_var
+        (identifier))))
+  (binary_expression
+    (variable
+      (environment_var
+        (identifier)))
+    (operator)
+    (variable
+      (environment_var
+        (identifier))))
+  (binary_expression
+    (variable
+      (environment_var
+        (identifier)))
+    (operator)
+    (variable
+      (environment_var
+        (identifier))))
+  (binary_expression
+    (variable
+      (environment_var
+        (identifier)))
+    (operator)
+    (variable
+      (environment_var
+        (identifier))))
+  (binary_expression
+    (variable
+      (environment_var
+        (identifier)))
+    (operator)
+    (literal
+      (number
+        (integer))))
+  (binary_expression
+    (variable
+      (environment_var
+        (identifier)))
+    (operator)
+    (literal
+      (number
+        (integer))))
+  (binary_expression
+    (variable
+      (environment_var
+        (identifier)))
+    (operator)
+    (variable
+      (environment_var
+        (identifier))))
+  (binary_expression
+    (variable
+      (environment_var
+        (identifier)))
+    (operator)
+    (variable
+      (environment_var
+        (identifier)))))
+
+==================
+An operator method may be called by its name in parentheses
+==================
+(+)(1, 2);
+(<-->)(1, 2);
+---
+
+(source_file
+  (function_call
+    (method_name)
+    (parameter_call_list
+      (argument_calls
+        (unnamed_argument
+          (literal
+            (number
+              (integer)))))
+      (argument_calls
+        (unnamed_argument
+          (literal
+            (number
+              (integer)))))))
+  (function_call
+    (method_name)
+    (parameter_call_list
+      (argument_calls
+        (unnamed_argument
+          (literal
+            (number
+              (integer)))))
+      (argument_calls
+        (unnamed_argument
+          (literal
+            (number
+              (integer))))))))
+
+==================
+An adverb is a name of any length, an integer or an expression
+==================
+a +.x b;
+a <<>.in1 b;
+a +.1 b;
+a +.-1 b;
+a +.(b; c) d;
+a foo:.x b;
+---
+
+(source_file
+  (binary_expression
+    (variable
+      (environment_var
+        (identifier)))
+    (adverb)
+    (variable
+      (environment_var
+        (identifier))))
+  (binary_expression
+    (variable
+      (environment_var
+        (identifier)))
+    (adverb)
+    (variable
+      (environment_var
+        (identifier))))
+  (binary_expression
+    (variable
+      (environment_var
+        (identifier)))
+    (adverb)
+    (variable
+      (environment_var
+        (identifier))))
+  (binary_expression
+    (variable
+      (environment_var
+        (identifier)))
+    (adverb)
+    (variable
+      (environment_var
+        (identifier))))
+  (binary_expression
+    (variable
+      (environment_var
+        (identifier)))
+    (adverb
+      (variable
+        (environment_var
+          (identifier)))
+      (variable
+        (environment_var
+          (identifier))))
+    (variable
+      (environment_var
+        (identifier))))
+  (binary_expression
+    (variable
+      (environment_var
+        (identifier)))
+    (method_name)
+    (adverb)
+    (variable
+      (environment_var
+        (identifier)))))

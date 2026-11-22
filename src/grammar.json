@@ -728,11 +728,8 @@
                 "content": {
                   "type": "ALIAS",
                   "content": {
-                    "type": "TOKEN",
-                    "content": {
-                      "type": "PATTERN",
-                      "value": "[-!@%&*+=|<>?\\/]+"
-                    }
+                    "type": "SYMBOL",
+                    "name": "_operator"
                   },
                   "named": true,
                   "value": "method_name"
@@ -3829,7 +3826,7 @@
                               },
                               {
                                 "type": "SYMBOL",
-                                "name": "_operator_method_name"
+                                "name": "_operator"
                               },
                               {
                                 "type": "STRING",
@@ -3933,7 +3930,7 @@
                               },
                               {
                                 "type": "SYMBOL",
-                                "name": "_operator_method_name"
+                                "name": "_operator"
                               },
                               {
                                 "type": "STRING",
@@ -5130,8 +5127,67 @@
               "value": "[a-z]"
             },
             {
+              "type": "ALIAS",
+              "content": {
+                "type": "SYMBOL",
+                "name": "identifier"
+              },
+              "named": false,
+              "value": "name"
+            },
+            {
               "type": "PATTERN",
               "value": "-?[0-9]+"
+            },
+            {
+              "type": "SEQ",
+              "members": [
+                {
+                  "type": "STRING",
+                  "value": "("
+                },
+                {
+                  "type": "SEQ",
+                  "members": [
+                    {
+                      "type": "SYMBOL",
+                      "name": "_object"
+                    },
+                    {
+                      "type": "REPEAT",
+                      "content": {
+                        "type": "SEQ",
+                        "members": [
+                          {
+                            "type": "STRING",
+                            "value": ";"
+                          },
+                          {
+                            "type": "SYMBOL",
+                            "name": "_object"
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "type": "CHOICE",
+                      "members": [
+                        {
+                          "type": "STRING",
+                          "value": ";"
+                        },
+                        {
+                          "type": "BLANK"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "STRING",
+                  "value": ")"
+                }
+              ]
             }
           ]
         }
@@ -5933,8 +5989,13 @@
                   "type": "SEQ",
                   "members": [
                     {
-                      "type": "PATTERN",
-                      "value": "\\|[=<>!+\\-*/%&|@]+\\|"
+                      "type": "ALIAS",
+                      "content": {
+                        "type": "SYMBOL",
+                        "name": "_operator"
+                      },
+                      "named": true,
+                      "value": "operator"
                     },
                     {
                       "type": "CHOICE",
@@ -7510,9 +7571,9 @@
       "type": "STRING",
       "value": "|"
     },
-    "_operator_method_name": {
+    "_operator": {
       "type": "PATTERN",
-      "value": "[!@%&*\\-+=|<>?\\/]+"
+      "value": "([!@%&*\\-+=|<>?]|\\/[!@%&\\-+=|<>?])[!@%&*\\-+=|<>?\\/]*|\\/"
     }
   },
   "extras": [

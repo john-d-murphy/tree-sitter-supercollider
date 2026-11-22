@@ -94,6 +94,14 @@ const PRECEDENCE = {
   code_block: 20,
 };
 
+// A binary operator, as sclang's lexer reads one (PyrLexer.cpp, binopchars):
+// any run of these characters, whatever it spells. `a <--> b` and `a *- b`
+// are each one operator, and a run that begins with a slash is an operator
+// unless the slash opens a comment. The operators the grammar names one by
+// one below are runs too; where both fit the same text the name wins, and a
+// longer run is always this.
+const OPERATOR = /([!@%&*\-+=|<>?]|\/[!@%&\-+=|<>?])[!@%&*\-+=|<>?\/]*|\//;
+
 // What an identifier is made of.
 const NAME = /(r#)?[a-zA-Zα-ωΑ-Ωµ_][a-zA-Zα-ωΑ-Ωµ\d_]*/;
 
@@ -127,7 +135,7 @@ function methodName($) {
     // expression can be)
     /[a-z]/,
     ...CONTROL_NAMES,
-    $._operator_method_name,
+    $._operator,
     // These operators are tokens of their own where an expression or a
     // function's arguments may begin, as they may while a class definition
     // and a call with a block are both being followed.
@@ -495,7 +503,7 @@ module.exports = grammar({
           // (a +++.1 b) are compile-time literals. See Syntax-Shortcuts.
           seq(
             "(",
-            field("callee", alias(token(/[-!@%&*+=|<>?\/]+/), $.method_name)),
+            field("callee", alias($._operator, $.method_name)),
             ")",
             "(",
             optional(field("arguments", $.parameter_call_list)),
@@ -1413,7 +1421,18 @@ module.exports = grammar({
 
     // Adverbs modify binary operators for collection operations
     // Examples: +.s (short), +.x (cross), +.t (table), +.f (flat), +.0, +.1
-    adverb: $ => seq(".", choice(/[a-z]/, /-?[0-9]+/)),
+    // An adverb is a name of any length (`<<>.in1`), an integer, or an
+    // expression in parentheses (lang11d: adverb).
+    adverb: $ =>
+      seq(
+        ".",
+        choice(
+          /[a-z]/,
+          alias($.identifier, "name"),
+          /-?[0-9]+/,
+          seq("(", expressionSequence($), ")"),
+        ),
+      ),
 
     binary_expression: $ => {
       const table = [
@@ -1455,8 +1474,8 @@ module.exports = grammar({
         // Function composition
         [PRECEDENCE.compose, "<>"],
 
-        // Composed operators |op| - lift operator to work with functions/patterns
-        [PRECEDENCE.compose, /\|[=<>!+\-*/%&|@]+\|/],
+        // Any other run of operator characters: `a <-- b`, `a |==| b`
+        [PRECEDENCE.compose, alias($._operator, $.operator)],
       ];
 
       return choice(
@@ -1904,7 +1923,6 @@ module.exports = grammar({
       ),
     pipe_token: $ => "|",
     // generator_arrow is defined in externals, handled by src/scanner.c
-    // The name of a binary operator's method: any run of operator characters.
-    _operator_method_name: $ => /[!@%&*\-+=|<>?\/]+/,
+    _operator: $ => OPERATOR,
   },
 });

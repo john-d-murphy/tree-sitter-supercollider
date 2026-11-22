@@ -1,4 +1,5 @@
 #include "tree_sitter/parser.h"
+#include <string.h>
 #include <wctype.h>
 // Block comment stuff here is largely nicked from tree-sitter-rust https://github.com/tree-sitter/tree-sitter-rust
 
@@ -80,6 +81,9 @@ bool tree_sitter_supercollider_external_scanner_scan(
     advance(lexer);
     if (lexer->lookahead == '-') {
       advance(lexer);
+      // A longer run of operator characters is an operator: `a <-- b`.
+      if (lexer->lookahead != 0 && strchr("!@%&*-+=|<>?/", lexer->lookahead))
+        return false;
       lexer->mark_end(lexer);
       lexer->result_symbol = GENERATOR_ARROW;
       return true;
