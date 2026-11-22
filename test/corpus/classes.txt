@@ -56,3 +56,100 @@ MyClass {
     (function_block
       body: (literal
         (string)))))
+
+================================================================================
+Two classes in one file
+================================================================================
+
+Foo { a { ^1 } }
+
+Bar : Foo { b { ^2 } }
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (class_def
+    (class)
+    (instance_method_name)
+    (function_block
+      (return_statement
+        (literal
+          (number
+            (integer))))))
+  (class_def
+    (class)
+    (parent_class)
+    (instance_method_name)
+    (function_block
+      (return_statement
+        (literal
+          (number
+            (integer)))))))
+
+================================================================================
+A class and two extensions
+================================================================================
+
+Foo { a { ^1 } }
+
++ Object { b { ^2 } }
+
++ Foo { c { ^3 } }
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (class_def
+    (class)
+    (instance_method_name)
+    (function_block
+      (return_statement
+        (literal
+          (number
+            (integer))))))
+  (class_def
+    (class)
+    (instance_method_name)
+    (function_block
+      (return_statement
+        (literal
+          (number
+            (integer))))))
+  (class_def
+    (class)
+    (instance_method_name)
+    (function_block
+      (return_statement
+        (literal
+          (number
+            (integer)))))))
+
+================================================================================
+A class, then a statement
+================================================================================
+
+Foo { a { ^1 } }
+
+Foo.new.a.postln;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (class_def
+    (class)
+    (instance_method_name)
+    (function_block
+      (return_statement
+        (literal
+          (number
+            (integer))))))
+  (function_call
+    (function_call
+      (function_call
+        (class)
+        (method_call
+          (method_name)))
+      (method_call
+        (method_name)))
+    (method_call
+      (method_name))))

@@ -182,8 +182,17 @@ module.exports = grammar({
     source_file: $ =>
       optional(
         seq(
-          // Zero or more semicolon-terminated expressions
-          repeat(seq($._expression, ";")),
+          repeat(
+            choice(
+              // A semicolon-terminated expression
+              seq($._expression, ";"),
+              // A class definition or extension needs no semicolon after it:
+              // a class file is one after another with nothing between. The
+              // precedence settles a file that ends with one: it is this, not
+              // the final expression below.
+              prec(1, $.class_def),
+            ),
+          ),
           // Optional final expression (no semicolon required)
           optional($._expression),
         ),
