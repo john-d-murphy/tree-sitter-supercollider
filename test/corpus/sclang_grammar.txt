@@ -1089,3 +1089,38 @@ A method whose name begins as a control structure's does
         (literal
           (number
             (integer)))))))
+
+==================
+A part of a series is a sequence of expressions
+==================
+(a; b .. c;);
+(a; 1, b; 3 .. c);
+---
+
+(source_file
+  (collection
+    (arithmetic_series
+      (variable
+        (environment_var
+          (identifier)))
+      (variable
+        (environment_var
+          (identifier)))
+      (variable
+        (environment_var
+          (identifier)))))
+  (collection
+    (arithmetic_series
+      (variable
+        (environment_var
+          (identifier)))
+      (number
+        (integer))
+      (variable
+        (environment_var
+          (identifier)))
+      (number
+        (integer))
+      (variable
+        (environment_var
+          (identifier))))))

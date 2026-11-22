@@ -185,6 +185,15 @@ function operatorName($) {
   );
 }
 
+// A part of a series: the start, the step or the end.
+function seriesPart($) {
+  return seq(
+    repeat(seq($._object, ";")),
+    $._numeric_expression,
+    optional(";"),
+  );
+}
+
 function sepBy1(sep, rule) {
   return seq(rule, repeat(seq(sep, rule)));
 }
@@ -293,9 +302,12 @@ module.exports = grammar({
     // integer is the rule's own or a number, as what follows the dot says.
     [$.number, $.for, $.forby],
 
-    // `(a; b)` is statements and `(a; b : c)` a dictionary keyed by an
-    // expression: which it is shows only at the colon.
-    [$._expression_statement, $.associative_item],
+    // `(a; b)` is statements, `(a; b : c)` a dictionary keyed by an
+    // expression and `(a; b .. c)` a series: which it is shows only at the
+    // colon or the two dots.
+    [$._expression_statement, $.associative_item, $.arithmetic_series],
+    [$.associative_item, $.arithmetic_series],
+    [$.ref_expression, $.associative_item, $.arithmetic_series],
   ],
 
   rules: {
@@ -1553,26 +1565,28 @@ module.exports = grammar({
       );
     },
 
+    // Each part of a series is a sequence of expressions, worth its last:
+    // `(a; b .. c)` (lang11d: valrange2, of exprseq).
     arithmetic_series: $ =>
       seq(
         "(",
         choice(
           // (start, step .. end) - series with explicit step
           seq(
-            $._numeric_expression,
+            seriesPart($),
             ",",
-            $._numeric_expression,
+            seriesPart($),
             "..",
-            $._numeric_expression,
+            seriesPart($),
           ),
           // (.. end) - from beginning to end; (:.. end), the same as a stream
-          seq(optional(":"), "..", $._numeric_expression),
+          seq(optional(":"), "..", seriesPart($)),
           // (start .. end) - simple range
-          seq($._numeric_expression, "..", $._numeric_expression),
+          seq(seriesPart($), "..", seriesPart($)),
           // (start ..) - open-ended range (infinite series)
-          seq($._numeric_expression, ".."),
+          seq(seriesPart($), ".."),
           // (start, step ..) - open-ended with step
-          seq($._numeric_expression, ",", $._numeric_expression, ".."),
+          seq(seriesPart($), ",", seriesPart($), ".."),
         ),
         ")",
       ),
