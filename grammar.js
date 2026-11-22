@@ -1334,27 +1334,40 @@ module.exports = grammar({
         ),
       ),
 
-    _index: $ =>
-      seq(
+    _index: $ => {
+      // An index may be any expression. A number, a symbol, a string, a
+      // character or a boolean stands as itself, not as a `literal`; and
+      // `(key: value)` is here the `code_block` a numeric expression has.
+      const item = choice(
+        $._numeric_expression,
+        $.symbol,
+        $.string,
+        $.char,
+        $.bool,
+        $.class,
+        $.association,
+        $.function_block,
+        $.control_structure,
+        $.collection,
+        $.partial,
+        $.duplicated_statement,
+        $.list_comprehension,
+        $.ref_expression,
+      );
+
+      return seq(
         "[",
         field(
           "index",
           choice(
-            // Multi-index: a[2, 3] or a[1, 2, 3] for multi-dimensional arrays
-            // Note: subranges in multi-index (a[1, 3..]) not supported due to grammar conflict
-            seq(
-              $._numeric_expression,
-              repeat1(seq(",", $._numeric_expression)),
-            ),
-            // Single index
-            $._numeric_expression,
+            // One index, or several: a[2, 3] for multi-dimensional arrays
+            sepBy1(",", item),
             $.index_subrange,
-            $.symbol,
-            $.string,
           ),
         ),
         "]",
-      ),
+      );
+    },
 
     arithmetic_series: $ =>
       seq(

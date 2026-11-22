@@ -29,3 +29,159 @@ arr[i];
     (variable
       (environment_var
         (identifier)))))
+
+================================================================================
+An index may be any expression
+================================================================================
+
+overhang[[0, 2]] = 0;
+options.sum(buttonSizes[_]);
+x[(-1..3)];
+a[1, 2, [3], 4];
+a[$x] + a[true] + a[Foo] + a[1 -> 2];
+a[{ 1 }] + a[`b] + a[1 ! 2];
+a[if(b) { 1 } { 2 }];
+a[\s, 1];
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (binary_expression
+    (indexed_collection
+      (variable
+        (local_var
+          (identifier)))
+      (collection
+        (literal
+          (number
+            (integer)))
+        (literal
+          (number
+            (integer)))))
+    (literal
+      (number
+        (integer))))
+  (function_call
+    (variable
+      (local_var
+        (identifier)))
+    (method_call
+      (method_name)
+      (parameter_call_list
+        (argument_calls
+          (unnamed_argument
+            (indexed_collection
+              (variable
+                (local_var
+                  (identifier)))
+              (partial)))))))
+  (indexed_collection
+    (variable
+      (environment_var
+        (identifier)))
+    (collection
+      (arithmetic_series
+        (unary_expression
+          (literal
+            (number
+              (integer))))
+        (number
+          (integer)))))
+  (indexed_collection
+    (variable
+      (environment_var
+        (identifier)))
+    (number
+      (integer))
+    (number
+      (integer))
+    (collection
+      (literal
+        (number
+          (integer))))
+    (number
+      (integer)))
+  (binary_expression
+    (binary_expression
+      (binary_expression
+        (indexed_collection
+          (variable
+            (environment_var
+              (identifier)))
+          (char))
+        (indexed_collection
+          (variable
+            (environment_var
+              (identifier)))
+          (bool)))
+      (indexed_collection
+        (variable
+          (environment_var
+            (identifier)))
+        (class)))
+    (indexed_collection
+      (variable
+        (environment_var
+          (identifier)))
+      (association
+        (literal
+          (number
+            (integer)))
+        (literal
+          (number
+            (integer))))))
+  (binary_expression
+    (binary_expression
+      (indexed_collection
+        (variable
+          (environment_var
+            (identifier)))
+        (function_block
+          (literal
+            (number
+              (integer)))))
+      (indexed_collection
+        (variable
+          (environment_var
+            (identifier)))
+        (ref_expression
+          (ref)
+          (variable
+            (environment_var
+              (identifier))))))
+    (indexed_collection
+      (variable
+        (environment_var
+          (identifier)))
+      (duplicated_statement
+        (literal
+          (number
+            (integer)))
+        (literal
+          (number
+            (integer))))))
+  (indexed_collection
+    (variable
+      (environment_var
+        (identifier)))
+    (control_structure
+      (if
+        (variable
+          (environment_var
+            (identifier)))
+        (function_block
+          (literal
+            (number
+              (integer))))
+        (function_block
+          (literal
+            (number
+              (integer)))))))
+  (indexed_collection
+    (variable
+      (environment_var
+        (identifier)))
+    (symbol
+      (identifier))
+    (number
+      (integer))))

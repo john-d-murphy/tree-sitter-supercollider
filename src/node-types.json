@@ -3046,11 +3046,43 @@
             "named": false
           },
           {
+            "type": "association",
+            "named": true
+          },
+          {
             "type": "binary_expression",
             "named": true
           },
           {
+            "type": "bool",
+            "named": true
+          },
+          {
+            "type": "char",
+            "named": true
+          },
+          {
+            "type": "class",
+            "named": true
+          },
+          {
             "type": "code_block",
+            "named": true
+          },
+          {
+            "type": "collection",
+            "named": true
+          },
+          {
+            "type": "control_structure",
+            "named": true
+          },
+          {
+            "type": "duplicated_statement",
+            "named": true
+          },
+          {
+            "type": "function_block",
             "named": true
           },
           {
@@ -3066,6 +3098,10 @@
             "named": true
           },
           {
+            "type": "list_comprehension",
+            "named": true
+          },
+          {
             "type": "method_call",
             "named": true
           },
@@ -3075,6 +3111,14 @@
           },
           {
             "type": "number",
+            "named": true
+          },
+          {
+            "type": "partial",
+            "named": true
+          },
+          {
+            "type": "ref_expression",
             "named": true
           },
           {
