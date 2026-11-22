@@ -1837,28 +1837,27 @@ module.exports = grammar({
         //        ...
         //        defaultFunc // optional
         //    );
+        //    A body or the default need not be a block (`$*, \CMETHOD`), and
+        //    a comma may follow the last of them.
         seq(
           field("name", "switch"),
           "(",
           field("selector", $._object),
-          ",",
-          field("test", $._object),
-          ",",
-          field("body", $.function_block),
           repeat(
             seq(
               ",",
               field("test", $._object),
               ",",
-              field("body", $.function_block),
+              field("body", $._object),
             ),
           ),
           optional(
             seq(
               ",",
-              field("default", $.function_block),
+              field("default", $._object),
             ),
           ),
+          optional(","),
           ")",
         ),
         // 2) Block-style switch (no commas):
