@@ -945,8 +945,12 @@
             "type": "CHOICE",
             "members": [
               {
-                "type": "SYMBOL",
-                "name": "variable_definition_sequence"
+                "type": "PREC",
+                "value": 1,
+                "content": {
+                  "type": "SYMBOL",
+                  "name": "variable_definition_sequence"
+                }
               },
               {
                 "type": "SEQ",
@@ -999,6 +1003,19 @@
             {
               "type": "SYMBOL",
               "name": "primitive"
+            },
+            {
+              "type": "SEQ",
+              "members": [
+                {
+                  "type": "SYMBOL",
+                  "name": "_expression"
+                },
+                {
+                  "type": "SYMBOL",
+                  "name": "return_statement"
+                }
+              ]
             }
           ]
         },

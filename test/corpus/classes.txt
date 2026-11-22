@@ -533,3 +533,92 @@ Array[x].postln;
           (identifier))))
     (method_call
       (method_name))))
+
+================================================================================
+A return follows the last expression with no semicolon between
+================================================================================
+
+Foo {
+    collect { |function|
+        var res = List.new;
+        this.do { |elem| res.add(function.value(elem)) }
+        ^res
+    }
+}
+{ |x| x.postln ^x };
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (class_def
+    (class)
+    (instance_method_name)
+    (function_block
+      (parameter_list
+        (pipe_parameter_list
+          (pipe_token)
+          (pipe_argument
+            (identifier))
+          (pipe_token)))
+      (variable_definition_sequence
+        (var_binding
+          (identifier)
+          (function_call
+            (class)
+            (method_call
+              (method_name)))))
+      (function_call
+        (variable
+          (local_var
+            (identifier)))
+        (method_call
+          (method_name)
+          (function_block
+            (parameter_list
+              (pipe_parameter_list
+                (pipe_token)
+                (pipe_argument
+                  (identifier))
+                (pipe_token)))
+            (function_call
+              (variable
+                (local_var
+                  (identifier)))
+              (method_call
+                (method_name)
+                (parameter_call_list
+                  (argument_calls
+                    (unnamed_argument
+                      (function_call
+                        (variable
+                          (local_var
+                            (identifier)))
+                        (method_call
+                          (method_name)
+                          (parameter_call_list
+                            (argument_calls
+                              (unnamed_argument
+                                (variable
+                                  (local_var
+                                    (identifier))))))))))))))))
+      (return_statement
+        (variable
+          (local_var
+            (identifier))))))
+  (function_block
+    (parameter_list
+      (pipe_parameter_list
+        (pipe_token)
+        (pipe_argument
+          (identifier))
+        (pipe_token)))
+    (function_call
+      (variable
+        (environment_var
+          (identifier)))
+      (method_call
+        (method_name)))
+    (return_statement
+      (variable
+        (environment_var
+          (identifier))))))

@@ -490,8 +490,10 @@ module.exports = grammar({
       seq(
         repeat(
           choice(
-            // variable_definition_sequence includes its own semicolon
-            $.variable_definition_sequence,
+            // variable_definition_sequence includes its own semicolon. The
+            // precedence keeps it a line of its own before a return, not
+            // the expression the return follows.
+            prec(1, $.variable_definition_sequence),
             // A primitive call needs no semicolon after it, and may have one
             seq($.primitive, optional(";")),
             // Other expressions need semicolons added
@@ -499,8 +501,13 @@ module.exports = grammar({
           ),
         ),
         // Final expression (no semicolon), or, where a method is nothing but
-        // its primitive, that
-        choice($._expression, $.primitive),
+        // its primitive, that. A return that ends the body needs no semicolon
+        // before it: `this.do { ... } ^res`.
+        choice(
+          $._expression,
+          $.primitive,
+          seq($._expression, $.return_statement),
+        ),
         optional(";"),
       ),
 
