@@ -457,3 +457,34 @@ y = 1.5e+3;
     (literal
       (number
         (exponential)))))
+
+================================================================================
+Accidentals of more than one step, and with cents
+================================================================================
+
+-2ss == -1.8;
+2bbb + 2s50 + 2b500;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (binary_expression
+    (unary_expression
+      (literal
+        (number
+          (accidental))))
+    (unary_expression
+      (literal
+        (number
+          (float)))))
+  (binary_expression
+    (binary_expression
+      (literal
+        (number
+          (accidental)))
+      (literal
+        (number
+          (accidental))))
+    (literal
+      (number
+        (accidental)))))

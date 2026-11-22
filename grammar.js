@@ -857,9 +857,10 @@ module.exports = grammar({
     radix_integer: $ => /\d+r[a-zA-Z0-9]+/,
     float: $ => /\d+\.\d+/,
     exponential: $ => /-?\d+(\.\d+)?[eE][-+]?\d+/,
-    // Musical accidentals: 1b (flat), 5s (sharp) - used in degree notation
+    // Musical accidentals: 1b (flat), 5s (sharp) - used in degree notation,
+    // any number of them (2ss), and cents after (2s50)
     // Lexer prefers longer match, so 1b matches accidental rather than integer+identifier
-    accidental: $ => /\d+[bs]/,
+    accidental: $ => /\d+(b+|s+)\d*/,
 
     symbol: $ =>
       choice(
