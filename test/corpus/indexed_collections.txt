@@ -228,3 +228,47 @@ nodeMap.unset(*pairs[0, 2..]);
                     (integer))
                   (number
                     (integer)))))))))))
+
+================================================================================
+A literal may be indexed
+================================================================================
+
+15 ! 5
+[ 15, 15, 15, 15, 15 ];
+\a[1] + $a[0] + true[0];
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (duplicated_statement
+    (literal
+      (number
+        (integer)))
+    (indexed_collection
+      (number
+        (integer))
+      (number
+        (integer))
+      (number
+        (integer))
+      (number
+        (integer))
+      (number
+        (integer))
+      (number
+        (integer))))
+  (binary_expression
+    (binary_expression
+      (indexed_collection
+        (symbol
+          (identifier))
+        (number
+          (integer)))
+      (indexed_collection
+        (char)
+        (number
+          (integer))))
+    (indexed_collection
+      (bool)
+      (number
+        (integer)))))

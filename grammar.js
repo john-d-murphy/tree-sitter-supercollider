@@ -1315,7 +1315,12 @@ module.exports = grammar({
         $.partial,
         $.collection,
         $.variable,
+        // a literal of any kind, bare as the string always was here
+        $.number,
+        $.symbol,
+        $.char,
         $.string,
+        $.bool,
         $.function_call,
         prec.left(1, $.code_block),
         $.control_structure,
