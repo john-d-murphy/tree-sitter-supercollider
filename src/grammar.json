@@ -4743,8 +4743,16 @@
               "value": ".."
             },
             {
-              "type": "SYMBOL",
-              "name": "_numeric_expression"
+              "type": "CHOICE",
+              "members": [
+                {
+                  "type": "SYMBOL",
+                  "name": "_numeric_expression"
+                },
+                {
+                  "type": "BLANK"
+                }
+              ]
             }
           ]
         }

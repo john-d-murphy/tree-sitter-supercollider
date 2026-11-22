@@ -1330,7 +1330,7 @@ module.exports = grammar({
           ",",
           $._numeric_expression,
           "..",
-          $._numeric_expression,
+          optional($._numeric_expression),
         ),
       ),
 
