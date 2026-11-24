@@ -1,2 +1,8 @@
 node_modules/
 lua-parser.js
+target/
+*.tgz
+*.so
+*.a
+*.o
+test.out
