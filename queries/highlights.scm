@@ -38,17 +38,19 @@
   (#any-of? @constant.builtin "nil" "inf"))
 
 ; Variables. `~name` is a key looked up in the current environment, so it is
-; coloured as a member; a one-letter name is an interpreter variable or a
-; local one, and the tree cannot tell which.
+; coloured as a member, the tilde and the name alike (they are two nodes:
+; which kind of variable it is is asked of the node that holds both); a
+; one-letter name is an interpreter variable or a local one, and the tree
+; cannot tell which.
 ((local_var
   name: (identifier) @variable)
   (#not-any-of? @variable "this" "super"))
 ((environment_var
-  name: (identifier) @variable.member)
-  (#match? @variable.member "^[~]"))
+  name: (identifier) @variable.member) @_variable
+  (#match? @_variable "^[~]"))
 ((environment_var
-  name: (identifier) @variable)
-  (#not-match? @variable "^[~]"))
+  name: (identifier) @variable) @_variable
+  (#not-match? @_variable "^[~]"))
 (var_binding
   name: (identifier) @variable)
 (destructuring_assignment

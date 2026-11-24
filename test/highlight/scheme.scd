@@ -31,6 +31,7 @@ y = [$a, \sym, 'a b', "str\n", true, nil, inf];
 
 ~amp = thisProcess.platform;
 // <- variable.member
+// ^ variable.member
 //     ^ variable.builtin
 //                ^ punctuation.delimiter
 //                 ^ function.method.call
