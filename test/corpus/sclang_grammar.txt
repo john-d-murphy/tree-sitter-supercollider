@@ -561,8 +561,8 @@ arg a; var b; a
   (parameter_list
     (argument
       (identifier)))
-  (variable
-    (instance_var
+  (variable_definition_sequence
+    (var_binding
       (identifier)))
   (variable
     (environment_var

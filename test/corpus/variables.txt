@@ -19,20 +19,21 @@ YoYO{
 instance variables with setters and getters
 ====================
 
-var <>hello;
-var >yo;
-var <yo;
+Greeter {
+    var <>hello;
+    var >yo;
+    var <yo;
+}
 
 ---
 
 (source_file
-  (variable
+  (class_def
+    (class)
     (instance_var
-      name: (identifier)))
-  (variable
+      name: (identifier))
     (instance_var
-      name: (identifier)))
-  (variable
+      name: (identifier))
     (instance_var
       name: (identifier))))
 
@@ -40,20 +41,21 @@ var <yo;
 class variables with setters and getters
 ====================
 
-classvar <>hello;
-classvar >yo;
-classvar <yo;
+Greeter {
+    classvar <>hello;
+    classvar >yo;
+    classvar <yo;
+}
 
 ---
 
 (source_file
-  (variable
+  (class_def
+    (class)
     (classvar
-      name: (identifier)))
-  (variable
+      name: (identifier))
     (classvar
-      name: (identifier)))
-  (variable
+      name: (identifier))
     (classvar
       name: (identifier))))
 
@@ -107,18 +109,16 @@ variable types
 var localvar = 1;
 a = 2;
 ~envvar = 3;
-classvar classy = 4;
 
 ---
 
 (source_file
-  (variable_definition
-    name: (variable
-      (instance_var
-        name: (identifier)))
-    value: (literal
-      (number
-        (integer))))
+  (variable_definition_sequence
+    (var_binding
+      name: (identifier)
+      value: (literal
+        (number
+          (integer)))))
   (variable_definition
     name: (variable
       (environment_var
@@ -130,13 +130,6 @@ classvar classy = 4;
     name: (variable
       (environment_var
         name: (identifier)
-        name: (identifier)))
-    value: (literal
-      (number
-        (integer))))
-  (variable_definition
-    name: (variable
-      (classvar
         name: (identifier)))
     value: (literal
       (number
@@ -152,31 +145,28 @@ var num3 = num1 + num2;
 ---
 
 (source_file
-  (variable_definition
-    name: (variable
-      (instance_var
-        name: (identifier)))
-    value: (literal
-      (number
-        (integer))))
-  (variable_definition
-    name: (variable
-      (instance_var
-        name: (identifier)))
-    value: (literal
-      (number
-        (integer))))
-  (variable_definition
-    name: (variable
-      (instance_var
-        name: (identifier)))
-    value: (binary_expression
-      left: (variable
-        (local_var
-          name: (identifier)))
-      right: (variable
-        (local_var
-          name: (identifier))))))
+  (variable_definition_sequence
+    (var_binding
+      name: (identifier)
+      value: (literal
+        (number
+          (integer)))))
+  (variable_definition_sequence
+    (var_binding
+      name: (identifier)
+      value: (literal
+        (number
+          (integer)))))
+  (variable_definition_sequence
+    (var_binding
+      name: (identifier)
+      value: (binary_expression
+        left: (variable
+          (local_var
+            name: (identifier)))
+        right: (variable
+          (local_var
+            name: (identifier)))))))
 
 ================================================================================
 The control structures' names as variables and arguments
@@ -285,3 +275,40 @@ f.value(a, for: 1, protect: 2);
             (literal
               (number
                 (integer)))))))))
+
+==================
+a declaration without a value after one with a value
+==================
+f = {
+    var a = 1;
+    var b;
+    var c = 2;
+    b
+};
+
+---
+
+(source_file
+  (function_definition
+    (variable
+      (environment_var
+        (identifier)))
+    (function_block
+      (variable_definition_sequence
+        (var_binding
+          (identifier)
+          (literal
+            (number
+              (integer)))))
+      (variable_definition_sequence
+        (var_binding
+          (identifier)))
+      (variable_definition_sequence
+        (var_binding
+          (identifier)
+          (literal
+            (number
+              (integer)))))
+      (variable
+        (environment_var
+          (identifier))))))

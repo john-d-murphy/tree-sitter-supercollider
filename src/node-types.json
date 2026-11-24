@@ -5696,15 +5696,7 @@
           "named": true
         },
         {
-          "type": "classvar",
-          "named": true
-        },
-        {
           "type": "environment_var",
-          "named": true
-        },
-        {
-          "type": "instance_var",
           "named": true
         },
         {

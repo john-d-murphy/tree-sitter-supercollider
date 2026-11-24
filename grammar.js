@@ -284,7 +284,7 @@ module.exports = grammar({
 
     // `Array[slot] : ArrayedCollection { ... }` opens a class, and `Array[item]`
     // is a list of one item: followed as far as it takes to tell.
-    [$.local_var, $.instance_var, $.class_def],
+    [$.local_var, $.class_def],
 
     // A line of variables that ends a file is one of the file's lines or its
     // final expression.
@@ -1025,14 +1025,10 @@ module.exports = grammar({
     // 	Variables  //
     /////////////////
 
-    variable: $ =>
-      choice(
-        $.environment_var,
-        $.local_var,
-        $.classvar,
-        $.builtin_var,
-        $.instance_var,
-      ),
+    // A name that stands for a value. The variables a class declares
+    // (`var <>a`, `classvar b`) are no values: sclang refuses them anywhere
+    // but in the body of a class, and so they are named only there.
+    variable: $ => choice($.environment_var, $.local_var, $.builtin_var),
 
     builtin_var: $ =>
       field(

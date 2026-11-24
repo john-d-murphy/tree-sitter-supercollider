@@ -205,62 +205,54 @@ var expNegativePre = -1E8;
 ---
 
 (source_file
-  (variable_definition
-    (variable
-      (instance_var
-        (identifier)))
-    (literal
-      (number
-        (integer))))
-  (variable_definition
-    (variable
-      (instance_var
-        (identifier)))
-    (literal
-      (number
-        (float))))
-  (variable_definition
-    (variable
-      (instance_var
-        (identifier)))
-    (literal
-      (number
-        (hexinteger))))
-  (variable_definition
-    (variable
-      (instance_var
-        (identifier)))
-    (literal
-      (number
-        (exponential))))
-  (variable_definition
-    (variable
-      (instance_var
-        (identifier)))
-    (literal
-      (number
-        (exponential))))
-  (variable_definition
-    (variable
-      (instance_var
-        (identifier)))
-    (literal
-      (number
-        (exponential))))
-  (variable_definition
-    (variable
-      (instance_var
-        (identifier)))
-    (literal
-      (number
-        (exponential))))
-  (variable_definition
-    (variable
-      (instance_var
-        (identifier)))
-    (literal
-      (number
-        (exponential)))))
+  (variable_definition_sequence
+    (var_binding
+      (identifier)
+      (literal
+        (number
+          (integer)))))
+  (variable_definition_sequence
+    (var_binding
+      (identifier)
+      (literal
+        (number
+          (float)))))
+  (variable_definition_sequence
+    (var_binding
+      (identifier)
+      (literal
+        (number
+          (hexinteger)))))
+  (variable_definition_sequence
+    (var_binding
+      (identifier)
+      (literal
+        (number
+          (exponential)))))
+  (variable_definition_sequence
+    (var_binding
+      (identifier)
+      (literal
+        (number
+          (exponential)))))
+  (variable_definition_sequence
+    (var_binding
+      (identifier)
+      (literal
+        (number
+          (exponential)))))
+  (variable_definition_sequence
+    (var_binding
+      (identifier)
+      (literal
+        (number
+          (exponential)))))
+  (variable_definition_sequence
+    (var_binding
+      (identifier)
+      (literal
+        (number
+          (exponential))))))
 
 ==================
 literal string
@@ -338,18 +330,16 @@ var boolean2 = false;
 ---
 
 (source_file
-  (variable_definition
-    (variable
-      (instance_var
-        (identifier)))
-    (literal
-      (bool)))
-  (variable_definition
-    (variable
-      (instance_var
-        (identifier)))
-    (literal
-      (bool))))
+  (variable_definition_sequence
+    (var_binding
+      (identifier)
+      (literal
+        (bool))))
+  (variable_definition_sequence
+    (var_binding
+      (identifier)
+      (literal
+        (bool)))))
 
 ====================
 Multi-line string
@@ -360,6 +350,7 @@ line two
 line three"
 )
 ---
+
 (source_file
   (code_block
     (literal
@@ -372,6 +363,7 @@ Multi-line string 2
 line two
 line three"
 ---
+
 (source_file
   (literal
     (string)))
@@ -385,6 +377,7 @@ and then, more items
 ");
 )
 ---
+
 (source_file
   (code_block
     (function_call

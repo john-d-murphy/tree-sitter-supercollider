@@ -3504,15 +3504,7 @@
         },
         {
           "type": "SYMBOL",
-          "name": "classvar"
-        },
-        {
-          "type": "SYMBOL",
           "name": "builtin_var"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "instance_var"
         }
       ]
     },
@@ -9279,7 +9271,6 @@
     ],
     [
       "local_var",
-      "instance_var",
       "class_def"
     ],
     [
