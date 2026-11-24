@@ -56,3 +56,693 @@ MyClass {
     (function_block
       body: (literal
         (string)))))
+
+================================================================================
+Two classes in one file
+================================================================================
+
+Foo { a { ^1 } }
+
+Bar : Foo { b { ^2 } }
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (class_def
+    (class)
+    (instance_method_name)
+    (function_block
+      (return_statement
+        (literal
+          (number
+            (integer))))))
+  (class_def
+    (class)
+    (parent_class)
+    (instance_method_name)
+    (function_block
+      (return_statement
+        (literal
+          (number
+            (integer)))))))
+
+================================================================================
+A class and two extensions
+================================================================================
+
+Foo { a { ^1 } }
+
++ Object { b { ^2 } }
+
++ Foo { c { ^3 } }
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (class_def
+    (class)
+    (instance_method_name)
+    (function_block
+      (return_statement
+        (literal
+          (number
+            (integer))))))
+  (class_def
+    (class)
+    (instance_method_name)
+    (function_block
+      (return_statement
+        (literal
+          (number
+            (integer))))))
+  (class_def
+    (class)
+    (instance_method_name)
+    (function_block
+      (return_statement
+        (literal
+          (number
+            (integer)))))))
+
+================================================================================
+A class, then a statement
+================================================================================
+
+Foo { a { ^1 } }
+
+Foo.new.a.postln;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (class_def
+    (class)
+    (instance_method_name)
+    (function_block
+      (return_statement
+        (literal
+          (number
+            (integer))))))
+  (function_call
+    (function_call
+      (function_call
+        (class)
+        (method_call
+          (method_name)))
+      (method_call
+        (method_name)))
+    (method_call
+      (method_name))))
+
+================================================================================
+Methods named by binary operators
+================================================================================
+
+Foo {
+    == { |other| ^other.name == name }
+    + { |other| ^this.add(other) }
+    * { |n| ^this.scale(n) }
+    *new { ^super.new }
+    <= { |x| ^true }
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (class_def
+    (class)
+    (instance_method_name)
+    (function_block
+      (parameter_list
+        (pipe_parameter_list
+          (pipe_token)
+          (pipe_argument
+            (identifier))
+          (pipe_token)))
+      (return_statement
+        (binary_expression
+          (function_call
+            (variable
+              (local_var
+                (identifier)))
+            (method_call
+              (method_name)))
+          (variable
+            (local_var
+              (identifier))))))
+    (instance_method_name)
+    (function_block
+      (parameter_list
+        (pipe_parameter_list
+          (pipe_token)
+          (pipe_argument
+            (identifier))
+          (pipe_token)))
+      (return_statement
+        (function_call
+          (variable
+            (local_var
+              (identifier)))
+          (method_call
+            (method_name)
+            (parameter_call_list
+              (argument_calls
+                (unnamed_argument
+                  (variable
+                    (local_var
+                      (identifier))))))))))
+    (instance_method_name)
+    (function_block
+      (parameter_list
+        (pipe_parameter_list
+          (pipe_token)
+          (pipe_argument
+            (identifier))
+          (pipe_token)))
+      (return_statement
+        (function_call
+          (variable
+            (local_var
+              (identifier)))
+          (method_call
+            (method_name)
+            (parameter_call_list
+              (argument_calls
+                (unnamed_argument
+                  (variable
+                    (environment_var
+                      (identifier))))))))))
+    (class_method_marker)
+    (class_method_name)
+    (function_block
+      (return_statement
+        (function_call
+          (variable
+            (local_var
+              (identifier)))
+          (method_call
+            (method_name)))))
+    (instance_method_name)
+    (function_block
+      (parameter_list
+        (pipe_parameter_list
+          (pipe_token)
+          (pipe_argument
+            (identifier))
+          (pipe_token)))
+      (return_statement
+        (literal
+          (bool))))))
+
+================================================================================
+Primitive calls
+================================================================================
+
+Foo {
+    *new { arg maxSize;
+        _BasicNew
+        ^this.primitiveFailed
+    }
+    size {
+        _BasicSize
+    }
+    at { |i|
+        var x;
+        _BasicAt;
+        ^this.primitiveFailed;
+    }
+    one { _One }
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (class_def
+    (class)
+    (class_method_marker)
+    (class_method_name)
+    (function_block
+      (parameter_list
+        (argument
+          (identifier)))
+      (primitive)
+      (return_statement
+        (function_call
+          (variable
+            (local_var
+              (identifier)))
+          (method_call
+            (method_name)))))
+    (instance_method_name)
+    (function_block
+      (primitive))
+    (instance_method_name)
+    (function_block
+      (parameter_list
+        (pipe_parameter_list
+          (pipe_token)
+          (pipe_argument
+            (identifier))
+          (pipe_token)))
+      (variable_definition_sequence
+        (var_binding
+          (identifier)))
+      (primitive)
+      (return_statement
+        (function_call
+          (variable
+            (local_var
+              (identifier)))
+          (method_call
+            (method_name)))))
+    (instance_method_name)
+    (function_block
+      (primitive))))
+
+================================================================================
+A class name with a block is a call
+================================================================================
+
+r = Routine { 1.wait };
+Routine { loop { 1.wait } }.play;
+Task { |x| x.wait };
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (variable_definition
+    (variable
+      (environment_var
+        (identifier)))
+    (function_call
+      (class)
+      (function_block
+        (function_call
+          (literal
+            (number
+              (integer)))
+          (method_call
+            (method_name))))))
+  (function_call
+    (function_call
+      (class)
+      (function_block
+        (function_call
+          (method_name)
+          (function_block
+            (function_call
+              (literal
+                (number
+                  (integer)))
+              (method_call
+                (method_name)))))))
+    (method_call
+      (method_name)))
+  (function_call
+    (class)
+    (function_block
+      (parameter_list
+        (pipe_parameter_list
+          (pipe_token)
+          (pipe_argument
+            (identifier))
+          (pipe_token)))
+      (function_call
+        (variable
+          (environment_var
+            (identifier)))
+        (method_call
+          (method_name))))))
+
+================================================================================
+A class and a call with a block that both fit: the class
+================================================================================
+
+Foo { bar { ^1 } }
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (class_def
+    (class)
+    (instance_method_name)
+    (function_block
+      (return_statement
+        (literal
+          (number
+            (integer)))))))
+
+================================================================================
+One-letter method names
+================================================================================
+
+Point {
+    var <>x, <>y;
+    *x { ^1 }
+    x { ^x }
+    y { ^y }
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (class_def
+    (class)
+    (instance_var
+      (identifier))
+    (instance_var
+      (identifier))
+    (class_method_marker)
+    (class_method_name)
+    (function_block
+      (return_statement
+        (literal
+          (number
+            (integer)))))
+    (instance_method_name)
+    (function_block
+      (return_statement
+        (variable
+          (environment_var
+            (identifier)))))
+    (instance_method_name)
+    (function_block
+      (return_statement
+        (variable
+          (environment_var
+            (identifier)))))))
+
+================================================================================
+Argument defaults written name(value)
+================================================================================
+
+Foo {
+    writeDefFile { arg dir, overwrite(true); ^dir }
+    *new { | size, collectionClass(Array) | ^size }
+    keys { arg species(Set); ^species }
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (class_def
+    (class)
+    (instance_method_name)
+    (function_block
+      (parameter_list
+        (argument
+          (identifier))
+        (argument
+          (identifier)
+          (argument_default
+            (literal
+              (bool)))))
+      (return_statement
+        (variable
+          (local_var
+            (identifier)))))
+    (class_method_marker)
+    (class_method_name)
+    (function_block
+      (parameter_list
+        (pipe_parameter_list
+          (pipe_token)
+          (pipe_argument
+            (identifier))
+          (pipe_argument
+            (identifier)
+            (class))
+          (pipe_token)))
+      (return_statement
+        (variable
+          (local_var
+            (identifier)))))
+    (instance_method_name)
+    (function_block
+      (parameter_list
+        (argument
+          (identifier)
+          (argument_default
+            (class))))
+      (return_statement
+        (variable
+          (local_var
+            (identifier)))))))
+
+================================================================================
+A class that holds indexed slots
+================================================================================
+
+Array[slot] : ArrayedCollection {
+    foo { ^1 }
+}
+String[char] : RawArray { }
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (class_def
+    (class)
+    (identifier)
+    (parent_class)
+    (instance_method_name)
+    (function_block
+      (return_statement
+        (literal
+          (number
+            (integer))))))
+  (class_def
+    (class)
+    (identifier)
+    (parent_class)))
+
+================================================================================
+A class name with a list of one name is still a list
+================================================================================
+
+Array[x].postln;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_call
+    (collection
+      (collection_type)
+      (variable
+        (environment_var
+          (identifier))))
+    (method_call
+      (method_name))))
+
+================================================================================
+A return follows the last expression with no semicolon between
+================================================================================
+
+Foo {
+    collect { |function|
+        var res = List.new;
+        this.do { |elem| res.add(function.value(elem)) }
+        ^res
+    }
+}
+{ |x| x.postln ^x };
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (class_def
+    (class)
+    (instance_method_name)
+    (function_block
+      (parameter_list
+        (pipe_parameter_list
+          (pipe_token)
+          (pipe_argument
+            (identifier))
+          (pipe_token)))
+      (variable_definition_sequence
+        (var_binding
+          (identifier)
+          (function_call
+            (class)
+            (method_call
+              (method_name)))))
+      (function_call
+        (variable
+          (local_var
+            (identifier)))
+        (method_call
+          (method_name)
+          (function_block
+            (parameter_list
+              (pipe_parameter_list
+                (pipe_token)
+                (pipe_argument
+                  (identifier))
+                (pipe_token)))
+            (function_call
+              (variable
+                (local_var
+                  (identifier)))
+              (method_call
+                (method_name)
+                (parameter_call_list
+                  (argument_calls
+                    (unnamed_argument
+                      (function_call
+                        (variable
+                          (local_var
+                            (identifier)))
+                        (method_call
+                          (method_name)
+                          (parameter_call_list
+                            (argument_calls
+                              (unnamed_argument
+                                (variable
+                                  (local_var
+                                    (identifier))))))))))))))))
+      (return_statement
+        (variable
+          (local_var
+            (identifier))))))
+  (function_block
+    (parameter_list
+      (pipe_parameter_list
+        (pipe_token)
+        (pipe_argument
+          (identifier))
+        (pipe_token)))
+    (function_call
+      (variable
+        (environment_var
+          (identifier)))
+      (method_call
+        (method_name)))
+    (return_statement
+      (variable
+        (environment_var
+          (identifier))))))
+
+================================================================================
+Methods named as the control structures are
+================================================================================
+
+Foo {
+    for { arg endval, function; ^1 }
+    *while { ^2 }
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (class_def
+    (class)
+    (instance_method_name)
+    (function_block
+      (parameter_list
+        (argument
+          (identifier))
+        (argument
+          (identifier)))
+      (return_statement
+        (literal
+          (number
+            (integer)))))
+    (class_method_marker)
+    (class_method_name)
+    (function_block
+      (return_statement
+        (literal
+          (number
+            (integer)))))))
+
+================================================================================
+Class methods and first methods named by operators
+================================================================================
+
+Post {
+    classvar <>formats;
+    * << { arg item; item.post }
+    * <<* { arg collection; collection.do(_.post) }
+}
+Bits {
+    | { arg that; ^this.union(that) }
+    - { arg that; ^this.difference(that) }
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (class_def
+    (class)
+    (classvar
+      (identifier))
+    (class_method_marker)
+    (class_method_name)
+    (function_block
+      (parameter_list
+        (argument
+          (identifier)))
+      (function_call
+        (variable
+          (local_var
+            (identifier)))
+        (method_call
+          (method_name))))
+    (class_method_marker)
+    (class_method_name)
+    (function_block
+      (parameter_list
+        (argument
+          (identifier)))
+      (function_call
+        (variable
+          (local_var
+            (identifier)))
+        (method_call
+          (method_name)
+          (parameter_call_list
+            (argument_calls
+              (unnamed_argument
+                (function_call
+                  (partial)
+                  (method_call
+                    (method_name))))))))))
+  (class_def
+    (class)
+    (instance_method_name)
+    (function_block
+      (parameter_list
+        (argument
+          (identifier)))
+      (return_statement
+        (function_call
+          (variable
+            (local_var
+              (identifier)))
+          (method_call
+            (method_name)
+            (parameter_call_list
+              (argument_calls
+                (unnamed_argument
+                  (variable
+                    (local_var
+                      (identifier))))))))))
+    (instance_method_name)
+    (function_block
+      (parameter_list
+        (argument
+          (identifier)))
+      (return_statement
+        (function_call
+          (variable
+            (local_var
+              (identifier)))
+          (method_call
+            (method_name)
+            (parameter_call_list
+              (argument_calls
+                (unnamed_argument
+                  (variable
+                    (local_var
+                      (identifier))))))))))))

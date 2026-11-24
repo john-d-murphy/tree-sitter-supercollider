@@ -1,0 +1,1638 @@
+==================
+An operator is any run of operator characters
+==================
+a <-- b;
+a ---> b;
+a <! b;
+a <<* b;
+a *- 1;
+a =- 1;
+a |==| b;
+a +// b;
+---
+
+(source_file
+  (binary_expression
+    (variable
+      (environment_var
+        (identifier)))
+    (operator)
+    (variable
+      (environment_var
+        (identifier))))
+  (binary_expression
+    (variable
+      (environment_var
+        (identifier)))
+    (operator)
+    (variable
+      (environment_var
+        (identifier))))
+  (binary_expression
+    (variable
+      (environment_var
+        (identifier)))
+    (operator)
+    (variable
+      (environment_var
+        (identifier))))
+  (binary_expression
+    (variable
+      (environment_var
+        (identifier)))
+    (operator)
+    (variable
+      (environment_var
+        (identifier))))
+  (binary_expression
+    (variable
+      (environment_var
+        (identifier)))
+    (operator)
+    (literal
+      (number
+        (integer))))
+  (binary_expression
+    (variable
+      (environment_var
+        (identifier)))
+    (operator)
+    (literal
+      (number
+        (integer))))
+  (binary_expression
+    (variable
+      (environment_var
+        (identifier)))
+    (operator)
+    (variable
+      (environment_var
+        (identifier))))
+  (binary_expression
+    (variable
+      (environment_var
+        (identifier)))
+    (operator)
+    (variable
+      (environment_var
+        (identifier)))))
+
+==================
+An operator method may be called by its name in parentheses
+==================
+(+)(1, 2);
+(<-->)(1, 2);
+---
+
+(source_file
+  (function_call
+    (method_name)
+    (parameter_call_list
+      (argument_calls
+        (unnamed_argument
+          (literal
+            (number
+              (integer)))))
+      (argument_calls
+        (unnamed_argument
+          (literal
+            (number
+              (integer)))))))
+  (function_call
+    (method_name)
+    (parameter_call_list
+      (argument_calls
+        (unnamed_argument
+          (literal
+            (number
+              (integer)))))
+      (argument_calls
+        (unnamed_argument
+          (literal
+            (number
+              (integer))))))))
+
+==================
+An adverb is a name of any length, an integer or an expression
+==================
+a +.x b;
+a <<>.in1 b;
+a +.1 b;
+a +.-1 b;
+a +.(b; c) d;
+a foo:.x b;
+---
+
+(source_file
+  (binary_expression
+    (variable
+      (environment_var
+        (identifier)))
+    (adverb)
+    (variable
+      (environment_var
+        (identifier))))
+  (binary_expression
+    (variable
+      (environment_var
+        (identifier)))
+    (adverb)
+    (variable
+      (environment_var
+        (identifier))))
+  (binary_expression
+    (variable
+      (environment_var
+        (identifier)))
+    (adverb)
+    (variable
+      (environment_var
+        (identifier))))
+  (binary_expression
+    (variable
+      (environment_var
+        (identifier)))
+    (adverb)
+    (variable
+      (environment_var
+        (identifier))))
+  (binary_expression
+    (variable
+      (environment_var
+        (identifier)))
+    (adverb
+      (variable
+        (environment_var
+          (identifier)))
+      (variable
+        (environment_var
+          (identifier))))
+    (variable
+      (environment_var
+        (identifier))))
+  (binary_expression
+    (variable
+      (environment_var
+        (identifier)))
+    (method_name)
+    (adverb)
+    (variable
+      (environment_var
+        (identifier)))))
+
+==================
+A key with its colon apart from it is an expression
+==================
+(a : 1, a + 1: 2, a.b : 3);
+[a : 1, b: 2];
+(Object : 1);
+---
+
+(source_file
+  (event
+    (associative_item
+      (variable
+        (environment_var
+          (identifier)))
+      (item
+        (literal
+          (number
+            (integer)))))
+    (associative_item
+      (binary_expression
+        (variable
+          (environment_var
+            (identifier)))
+        (literal
+          (number
+            (integer))))
+      (item
+        (literal
+          (number
+            (integer)))))
+    (associative_item
+      (function_call
+        (variable
+          (environment_var
+            (identifier)))
+        (method_call
+          (method_name)))
+      (item
+        (literal
+          (number
+            (integer))))))
+  (collection
+    (associative_item
+      (variable
+        (environment_var
+          (identifier)))
+      (item
+        (literal
+          (number
+            (integer)))))
+    (associative_item
+      (event_key)
+      (item
+        (literal
+          (number
+            (integer))))))
+  (event
+    (associative_item
+      (class)
+      (item
+        (literal
+          (number
+            (integer)))))))
+
+==================
+A key or a value may be a sequence of expressions
+==================
+(a; b : 2; 3);
+(a: 1; 2);
+[1; 2: 3; 4];
+---
+
+(source_file
+  (event
+    (associative_item
+      (variable
+        (environment_var
+          (identifier)))
+      (variable
+        (environment_var
+          (identifier)))
+      (item
+        (literal
+          (number
+            (integer))))
+      (item
+        (literal
+          (number
+            (integer))))))
+  (event
+    (associative_item
+      (event_key)
+      (item
+        (literal
+          (number
+            (integer))))
+      (item
+        (literal
+          (number
+            (integer))))))
+  (collection
+    (associative_item
+      (literal
+        (number
+          (integer)))
+      (literal
+        (number
+          (integer)))
+      (item
+        (literal
+          (number
+            (integer))))
+      (item
+        (literal
+          (number
+            (integer)))))))
+
+==================
+Blocks after a call, any number and of either kind
+==================
+f { 1 } { 2 };
+f(1) { 2 } { 3 };
+f.g { 1 } {: x, x <- y };
+Routine { 1 } { 2 };
+f.() { 1 };
+f.(1) { 2 };
+---
+
+(source_file
+  (function_call
+    (method_name)
+    (function_block
+      (literal
+        (number
+          (integer))))
+    (function_block
+      (literal
+        (number
+          (integer)))))
+  (function_call
+    (method_name)
+    (parameter_call_list
+      (argument_calls
+        (unnamed_argument
+          (literal
+            (number
+              (integer))))))
+    (function_block
+      (literal
+        (number
+          (integer))))
+    (function_block
+      (literal
+        (number
+          (integer)))))
+  (function_call
+    (variable
+      (environment_var
+        (identifier)))
+    (method_call
+      (method_name)
+      (function_block
+        (literal
+          (number
+            (integer))))
+      (list_comprehension
+        (variable
+          (environment_var
+            (identifier)))
+        (comprehension_generator
+          (variable
+            (environment_var
+              (identifier)))
+          (generator_arrow)
+          (variable
+            (environment_var
+              (identifier)))))))
+  (function_call
+    (class)
+    (function_block
+      (literal
+        (number
+          (integer))))
+    (function_block
+      (literal
+        (number
+          (integer)))))
+  (function_call
+    (variable
+      (environment_var
+        (identifier)))
+    (apply_call
+      (function_block
+        (literal
+          (number
+            (integer))))))
+  (function_call
+    (variable
+      (environment_var
+        (identifier)))
+    (apply_call
+      (parameter_call_list
+        (argument_calls
+          (unnamed_argument
+            (literal
+              (number
+                (integer))))))
+      (function_block
+        (literal
+          (number
+            (integer)))))))
+
+==================
+An operator or a keyword called by its name in parentheses
+==================
+(-)(1, 2);
+(*)(1, 2);
+(|)(1, 2);
+(foo:)(1, 2);
+(+) { 1 } { 2 };
+(+)() { 1 };
+---
+
+(source_file
+  (function_call
+    (method_name)
+    (parameter_call_list
+      (argument_calls
+        (unnamed_argument
+          (literal
+            (number
+              (integer)))))
+      (argument_calls
+        (unnamed_argument
+          (literal
+            (number
+              (integer)))))))
+  (function_call
+    (method_name)
+    (parameter_call_list
+      (argument_calls
+        (unnamed_argument
+          (literal
+            (number
+              (integer)))))
+      (argument_calls
+        (unnamed_argument
+          (literal
+            (number
+              (integer)))))))
+  (function_call
+    (method_name)
+    (parameter_call_list
+      (argument_calls
+        (unnamed_argument
+          (literal
+            (number
+              (integer)))))
+      (argument_calls
+        (unnamed_argument
+          (literal
+            (number
+              (integer)))))))
+  (function_call
+    (method_name)
+    (parameter_call_list
+      (argument_calls
+        (unnamed_argument
+          (literal
+            (number
+              (integer)))))
+      (argument_calls
+        (unnamed_argument
+          (literal
+            (number
+              (integer)))))))
+  (function_call
+    (method_name)
+    (function_block
+      (literal
+        (number
+          (integer))))
+    (function_block
+      (literal
+        (number
+          (integer)))))
+  (function_call
+    (method_name)
+    (function_block
+      (literal
+        (number
+          (integer))))))
+
+==================
+A list comprehension opened with a semicolon, with a sequence for its body, with two names
+==================
+{; x, x <- y };
+{ : x; y, x <- y };
+{: x, x z <- y };
+{: x, x <- y, : while x < 1, : : x.g };
+---
+
+(source_file
+  (list_comprehension
+    (variable
+      (environment_var
+        (identifier)))
+    (comprehension_generator
+      (variable
+        (environment_var
+          (identifier)))
+      (generator_arrow)
+      (variable
+        (environment_var
+          (identifier)))))
+  (list_comprehension
+    (variable
+      (environment_var
+        (identifier)))
+    (variable
+      (environment_var
+        (identifier)))
+    (comprehension_generator
+      (variable
+        (environment_var
+          (identifier)))
+      (generator_arrow)
+      (variable
+        (environment_var
+          (identifier)))))
+  (list_comprehension
+    (variable
+      (environment_var
+        (identifier)))
+    (comprehension_generator
+      (variable
+        (environment_var
+          (identifier)))
+      (identifier)
+      (generator_arrow)
+      (variable
+        (environment_var
+          (identifier)))))
+  (list_comprehension
+    (variable
+      (environment_var
+        (identifier)))
+    (comprehension_generator
+      (variable
+        (environment_var
+          (identifier)))
+      (generator_arrow)
+      (variable
+        (environment_var
+          (identifier))))
+    (comprehension_while
+      (binary_expression
+        (variable
+          (environment_var
+            (identifier)))
+        (literal
+          (number
+            (integer)))))
+    (comprehension_side_effect
+      (function_call
+        (variable
+          (environment_var
+            (identifier)))
+        (method_call
+          (method_name))))))
+
+==================
+Arguments at the top of interpreted code
+==================
+arg a; var b; a
+---
+
+(source_file
+  (parameter_list
+    (argument
+      (identifier)))
+  (variable_definition_sequence
+    (var_binding
+      (identifier)))
+  (variable
+    (environment_var
+      (identifier))))
+
+==================
+Arguments at the top of interpreted code that is all in parentheses
+==================
+(|a| a)
+---
+
+(source_file
+  (code_block
+    (parameter_list
+      (pipe_parameter_list
+        (pipe_token)
+        (pipe_argument
+          (identifier))
+        (pipe_token)))
+    (variable
+      (environment_var
+        (identifier)))))
+
+==================
+An index is a sequence of expressions, and may be written as a message
+==================
+a[b; c];
+a.[1];
+a.[1..2];
+a.b.[1, 3..];
+a.[1] = 2;
+{ 1 }[0];
+(a: 1)[\a];
+---
+
+(source_file
+  (indexed_collection
+    (variable
+      (environment_var
+        (identifier)))
+    (variable
+      (environment_var
+        (identifier)))
+    (variable
+      (environment_var
+        (identifier))))
+  (function_call
+    (variable
+      (environment_var
+        (identifier)))
+    (number
+      (integer)))
+  (function_call
+    (variable
+      (environment_var
+        (identifier)))
+    (index_subrange
+      (number
+        (integer))
+      (number
+        (integer))))
+  (function_call
+    (function_call
+      (variable
+        (environment_var
+          (identifier)))
+      (method_call
+        (method_name)))
+    (index_subrange
+      (number
+        (integer))
+      (number
+        (integer))))
+  (binary_expression
+    (function_call
+      (variable
+        (environment_var
+          (identifier)))
+      (number
+        (integer)))
+    (literal
+      (number
+        (integer))))
+  (indexed_collection
+    (function_block
+      (literal
+        (number
+          (integer))))
+    (number
+      (integer)))
+  (indexed_collection
+    (event
+      (associative_item
+        (event_key)
+        (item
+          (literal
+            (number
+              (integer))))))
+    (symbol
+      (identifier))))
+
+==================
+A series from the beginning, as a stream
+==================
+(:..3);
+---
+
+(source_file
+  (collection
+    (arithmetic_series
+      (number
+        (integer)))))
+
+==================
+A ref of whatever a ref may hold
+==================
+``a;
+`{ 1 };
+`(a: 1);
+`a[0];
+`-1;
+`Object;
+---
+
+(source_file
+  (ref_expression
+    (ref)
+    (ref_expression
+      (ref)
+      (variable
+        (environment_var
+          (identifier)))))
+  (ref_expression
+    (ref)
+    (function_block
+      (literal
+        (number
+          (integer)))))
+  (ref_expression
+    (ref)
+    (event
+      (associative_item
+        (event_key)
+        (item
+          (literal
+            (number
+              (integer)))))))
+  (ref_expression
+    (ref)
+    (indexed_collection
+      (variable
+        (environment_var
+          (identifier)))
+      (number
+        (integer))))
+  (ref_expression
+    (ref)
+    (unary_expression
+      (literal
+        (number
+          (integer)))))
+  (ref_expression
+    (ref)
+    (class)))
+
+==================
+The older default in a list of variables
+==================
+var a(1), b = 2, c(3; 4);
+a
+---
+
+(source_file
+  (variable_definition_sequence
+    (var_binding
+      (identifier)
+      (literal
+        (number
+          (integer))))
+    (var_binding
+      (identifier)
+      (literal
+        (number
+          (integer))))
+    (var_binding
+      (identifier)
+      (literal
+        (number
+          (integer)))
+      (literal
+        (number
+          (integer)))))
+  (variable
+    (environment_var
+      (identifier))))
+
+==================
+A default without its equals sign is any literal
+==================
+{ |a -1, b 1.5, c $a, d "a", e \a, f true, g nil, h #[1], i inf| a };
+---
+
+(source_file
+  (function_block
+    (parameter_list
+      (pipe_parameter_list
+        (pipe_token)
+        (pipe_argument
+          (identifier)
+          (pipe_safe_unary_expression
+            (literal
+              (number
+                (integer)))))
+        (pipe_argument
+          (identifier)
+          (literal
+            (number
+              (float))))
+        (pipe_argument
+          (identifier)
+          (literal
+            (char)))
+        (pipe_argument
+          (identifier)
+          (literal
+            (string)))
+        (pipe_argument
+          (identifier)
+          (literal
+            (symbol
+              (identifier))))
+        (pipe_argument
+          (identifier)
+          (literal
+            (bool)))
+        (pipe_argument
+          (identifier)
+          (variable))
+        (pipe_argument
+          (identifier)
+          (collection)
+          (collection)
+          (collection
+            (literal
+              (number
+                (integer))))
+          (collection))
+        (pipe_argument
+          (identifier)
+          (variable))
+        (pipe_token)))
+    (variable
+      (environment_var
+        (identifier)))))
+
+==================
+A character may be a line break
+==================
+[$
+, 1];
+---
+
+(source_file
+  (collection
+    (literal
+      (char))
+    (literal
+      (number
+        (integer)))))
+
+==================
+Constants need no comma between them
+==================
+Foo { const a = 1, b = 2 c = 3; }
+---
+
+(source_file
+  (class_def
+    (class)
+    (const
+      (identifier))
+    (literal
+      (number
+        (integer)))
+    (instance_var
+      (identifier))
+    (literal
+      (number
+        (integer)))
+    (instance_var
+      (identifier))
+    (literal
+      (number
+        (integer)))))
+
+==================
+A control structure's name called as a plain name
+==================
+if(a);
+if(a, b, c,);
+if { a } { b } { c };
+if(a, b, c: d);
+a.if;
+a.if(b);
+a.if = b;
+while(a, b);
+for(a);
+for { a };
+3.for(7) { |i| i };
+forBy(a);
+0.forBy(8, 2) { |i| i };
+case;
+try(a);
+---
+
+(source_file
+  (function_call
+    (method_name)
+    (parameter_call_list
+      (argument_calls
+        (unnamed_argument
+          (variable
+            (environment_var
+              (identifier)))))))
+  (function_call
+    (method_name)
+    (parameter_call_list
+      (argument_calls
+        (unnamed_argument
+          (variable
+            (environment_var
+              (identifier)))))
+      (argument_calls
+        (unnamed_argument
+          (variable
+            (environment_var
+              (identifier)))))
+      (argument_calls
+        (unnamed_argument
+          (variable
+            (environment_var
+              (identifier)))))))
+  (function_call
+    (method_name)
+    (function_block
+      (variable
+        (environment_var
+          (identifier))))
+    (function_block
+      (variable
+        (environment_var
+          (identifier))))
+    (function_block
+      (variable
+        (environment_var
+          (identifier)))))
+  (function_call
+    (method_name)
+    (parameter_call_list
+      (argument_calls
+        (unnamed_argument
+          (variable
+            (environment_var
+              (identifier)))))
+      (argument_calls
+        (unnamed_argument
+          (variable
+            (environment_var
+              (identifier)))))
+      (argument_calls
+        (named_argument
+          (identifier)
+          (variable
+            (environment_var
+              (identifier)))))))
+  (function_call
+    (variable
+      (environment_var
+        (identifier)))
+    (method_call
+      (method_name)))
+  (function_call
+    (variable
+      (environment_var
+        (identifier)))
+    (method_call
+      (method_name)
+      (parameter_call_list
+        (argument_calls
+          (unnamed_argument
+            (variable
+              (environment_var
+                (identifier))))))))
+  (binary_expression
+    (function_call
+      (variable
+        (environment_var
+          (identifier)))
+      (method_call
+        (method_name)))
+    (variable
+      (environment_var
+        (identifier))))
+  (function_call
+    (method_name)
+    (parameter_call_list
+      (argument_calls
+        (unnamed_argument
+          (variable
+            (environment_var
+              (identifier)))))
+      (argument_calls
+        (unnamed_argument
+          (variable
+            (environment_var
+              (identifier)))))))
+  (function_call
+    (method_name)
+    (parameter_call_list
+      (argument_calls
+        (unnamed_argument
+          (variable
+            (environment_var
+              (identifier)))))))
+  (function_call
+    (method_name)
+    (function_block
+      (variable
+        (environment_var
+          (identifier)))))
+  (function_call
+    (literal
+      (number
+        (integer)))
+    (method_call
+      (method_name)
+      (parameter_call_list
+        (argument_calls
+          (unnamed_argument
+            (literal
+              (number
+                (integer))))))
+      (function_block
+        (parameter_list
+          (pipe_parameter_list
+            (pipe_token)
+            (pipe_argument
+              (identifier))
+            (pipe_token)))
+        (variable
+          (environment_var
+            (identifier))))))
+  (function_call
+    (method_name)
+    (parameter_call_list
+      (argument_calls
+        (unnamed_argument
+          (variable
+            (environment_var
+              (identifier)))))))
+  (function_call
+    (literal
+      (number
+        (integer)))
+    (method_call
+      (method_name)
+      (parameter_call_list
+        (argument_calls
+          (unnamed_argument
+            (literal
+              (number
+                (integer)))))
+        (argument_calls
+          (unnamed_argument
+            (literal
+              (number
+                (integer))))))
+      (function_block
+        (parameter_list
+          (pipe_parameter_list
+            (pipe_token)
+            (pipe_argument
+              (identifier))
+            (pipe_token)))
+        (variable
+          (environment_var
+            (identifier))))))
+  (variable
+    (local_var
+      (identifier)))
+  (control_structure
+    (try
+      (variable
+        (environment_var
+          (identifier))))))
+
+==================
+A method whose name begins as a control structure's does
+==================
+3.format(1);
+3.fork { 1 };
+---
+
+(source_file
+  (function_call
+    (literal
+      (number
+        (integer)))
+    (method_call
+      (method_name)
+      (parameter_call_list
+        (argument_calls
+          (unnamed_argument
+            (literal
+              (number
+                (integer))))))))
+  (function_call
+    (literal
+      (number
+        (integer)))
+    (method_call
+      (method_name)
+      (function_block
+        (literal
+          (number
+            (integer)))))))
+
+==================
+A part of a series is a sequence of expressions
+==================
+(a; b .. c;);
+(a; 1, b; 3 .. c);
+---
+
+(source_file
+  (collection
+    (arithmetic_series
+      (variable
+        (environment_var
+          (identifier)))
+      (variable
+        (environment_var
+          (identifier)))
+      (variable
+        (environment_var
+          (identifier)))))
+  (collection
+    (arithmetic_series
+      (variable
+        (environment_var
+          (identifier)))
+      (number
+        (integer))
+      (variable
+        (environment_var
+          (identifier)))
+      (number
+        (integer))
+      (variable
+        (environment_var
+          (identifier))))))
+
+==================
+A string or a symbol that begins as a comment does
+==================
+"/* no comment";
+'/*';
+"// no comment";
+"a" /* a comment */ "b";
+---
+
+(source_file
+  (literal
+    (string))
+  (literal
+    (symbol))
+  (literal
+    (string))
+  (literal
+    (string
+      (block_comment))))
+
+==================
+A backslash takes whatever follows it
+==================
+"\x \8 \u12";
+'\x';
+---
+
+(source_file
+  (literal
+    (string
+      (escape_sequence)
+      (escape_sequence)
+      (escape_sequence)))
+  (literal
+    (symbol)))
+
+==================
+Forms the help corpus and the class library turned up
+==================
+x.if(a);
+x.if;
+if(a, b, c,);
+f(1);
+f($ );
+{ :[x, y], x <- (0..10), y <- (0..x) };
+(type: \test, \y: 7);
+x[(-1..3)];
+a[1, 3..] = 1;
+o(Maybe(1), *a);
+for(3, 7) { |i| i };
+while(true);
+(1..8).collect((1.._));
+{ |how = "", end = "..."| how };
+(0..i*3);
+---
+
+(source_file
+  (function_call
+    (variable
+      (environment_var
+        (identifier)))
+    (method_call
+      (method_name)
+      (parameter_call_list
+        (argument_calls
+          (unnamed_argument
+            (variable
+              (environment_var
+                (identifier))))))))
+  (function_call
+    (variable
+      (environment_var
+        (identifier)))
+    (method_call
+      (method_name)))
+  (function_call
+    (method_name)
+    (parameter_call_list
+      (argument_calls
+        (unnamed_argument
+          (variable
+            (environment_var
+              (identifier)))))
+      (argument_calls
+        (unnamed_argument
+          (variable
+            (environment_var
+              (identifier)))))
+      (argument_calls
+        (unnamed_argument
+          (variable
+            (environment_var
+              (identifier)))))))
+  (function_call
+    (method_name)
+    (parameter_call_list
+      (argument_calls
+        (unnamed_argument
+          (literal
+            (number
+              (integer)))))))
+  (function_call
+    (method_name)
+    (parameter_call_list
+      (argument_calls
+        (unnamed_argument
+          (literal
+            (char))))))
+  (list_comprehension
+    (collection
+      (variable
+        (environment_var
+          (identifier)))
+      (variable
+        (environment_var
+          (identifier))))
+    (comprehension_generator
+      (variable
+        (environment_var
+          (identifier)))
+      (generator_arrow)
+      (collection
+        (arithmetic_series
+          (number
+            (integer))
+          (number
+            (integer)))))
+    (comprehension_generator
+      (variable
+        (environment_var
+          (identifier)))
+      (generator_arrow)
+      (collection
+        (arithmetic_series
+          (number
+            (integer))
+          (variable
+            (environment_var
+              (identifier)))))))
+  (event
+    (associative_item
+      (event_key)
+      (item
+        (literal
+          (symbol
+            (identifier)))))
+    (associative_item
+      (symbol
+        (identifier))
+      (item
+        (literal
+          (number
+            (integer))))))
+  (indexed_collection
+    (variable
+      (environment_var
+        (identifier)))
+    (collection
+      (arithmetic_series
+        (unary_expression
+          (literal
+            (number
+              (integer))))
+        (number
+          (integer)))))
+  (binary_expression
+    (indexed_collection
+      (variable
+        (environment_var
+          (identifier)))
+      (index_subrange
+        (number
+          (integer))
+        (number
+          (integer))))
+    (literal
+      (number
+        (integer))))
+  (function_call
+    (method_name)
+    (parameter_call_list
+      (argument_calls
+        (unnamed_argument
+          (function_call
+            (class)
+            (parameter_call_list
+              (argument_calls
+                (unnamed_argument
+                  (literal
+                    (number
+                      (integer)))))))))
+      (argument_calls
+        (unnamed_argument
+          (unary_expression
+            (variable
+              (environment_var
+                (identifier))))))))
+  (control_structure
+    (for
+      (literal
+        (number
+          (integer)))
+      (literal
+        (number
+          (integer)))
+      (function_block
+        (parameter_list
+          (pipe_parameter_list
+            (pipe_token)
+            (pipe_argument
+              (identifier))
+            (pipe_token)))
+        (variable
+          (environment_var
+            (identifier))))))
+  (control_structure
+    (while
+      (literal
+        (bool))))
+  (function_call
+    (collection
+      (arithmetic_series
+        (number
+          (integer))
+        (number
+          (integer))))
+    (method_call
+      (method_name)
+      (parameter_call_list
+        (argument_calls
+          (unnamed_argument
+            (collection
+              (arithmetic_series
+                (number
+                  (integer))
+                (partial))))))))
+  (function_block
+    (parameter_list
+      (pipe_parameter_list
+        (pipe_token)
+        (pipe_argument
+          (identifier)
+          (literal
+            (string)))
+        (pipe_argument
+          (identifier)
+          (literal
+            (string)))
+        (pipe_token)))
+    (variable
+      (local_var
+        (identifier))))
+  (collection
+    (arithmetic_series
+      (number
+        (integer))
+      (binary_expression
+        (variable
+          (environment_var
+            (identifier)))
+        (literal
+          (number
+            (integer)))))))
+
+==================
+A pipe with an operator character after it is an operator: after the arguments
+:error
+==================
+f = { |a|-1 };
+---
+
+
+
+==================
+A pipe with an operator character after it is an operator: before a comment
+:error
+==================
+f = { |a|/*c*/ a };
+---
+
+
+
+==================
+A pipe with an operator character after it is an operator: two pipes
+:error
+==================
+f = { || 1 };
+---
+
+
+
+==================
+An equals sign with an operator character after it is an operator: between pipes
+:error
+==================
+f = { |a=-1| a };
+---
+
+
+
+==================
+An equals sign with an operator character after it is an operator: in an arg list
+:error
+==================
+f = { arg a=-1; a };
+---
+
+
+
+==================
+A default between pipes is a literal or in parentheses: a name is neither
+:error
+==================
+f = { |a = b| a };
+---
+
+
+
+==================
+A default between pipes is a literal or in parentheses: a sum is neither
+:error
+==================
+f = { |a = 1 + 2| a };
+---
+
+
+
+==================
+An adverb's number is read whole: an accidental is no integer and a name
+:error
+==================
+x = a+.2b;
+---
+
+
+
+==================
+A comment left open is not a division and a star
+:error
+==================
+x = 1;
+y = 2 /* d
+---
+
+
+
+==================
+A star stands only before an argument
+:error
+==================
+x = 2 * *a;
+---
+
+
+
+==================
+An argument list needs its commas
+:error
+==================
+f = { arg a b; a + b };
+---
+
+
+
+==================
+A pipe, an equals sign and a star where sclang has them
+==================
+f = { |a| -1 };
+f = { |a = -1, b = (c + 1), d = #[1], e = nil| a };
+f = { arg a = -1; a };
+x = a | b;
+x = a == b;
+f(*a);
+x.f(1, *a);
+x = a +.2 b;
+---
+
+(source_file
+  (function_definition
+    (variable
+      (environment_var
+        (identifier)))
+    (function_block
+      (parameter_list
+        (pipe_parameter_list
+          (pipe_token)
+          (pipe_argument
+            (identifier))
+          (pipe_token)))
+      (unary_expression
+        (literal
+          (number
+            (integer))))))
+  (function_definition
+    (variable
+      (environment_var
+        (identifier)))
+    (function_block
+      (parameter_list
+        (pipe_parameter_list
+          (pipe_token)
+          (pipe_argument
+            (identifier)
+            (pipe_safe_unary_expression
+              (literal
+                (number
+                  (integer)))))
+          (pipe_argument
+            (identifier)
+            (code_block
+              (binary_expression
+                (variable
+                  (environment_var
+                    (identifier)))
+                (literal
+                  (number
+                    (integer))))))
+          (pipe_argument
+            (identifier)
+            (collection)
+            (collection)
+            (collection
+              (literal
+                (number
+                  (integer))))
+            (collection))
+          (pipe_argument
+            (identifier)
+            (variable))
+          (pipe_token)))
+      (variable
+        (environment_var
+          (identifier)))))
+  (function_definition
+    (variable
+      (environment_var
+        (identifier)))
+    (function_block
+      (parameter_list
+        (argument
+          (identifier)
+          (argument_default
+            (unary_expression
+              (literal
+                (number
+                  (integer)))))))
+      (variable
+        (environment_var
+          (identifier)))))
+  (variable_definition
+    (variable
+      (environment_var
+        (identifier)))
+    (binary_expression
+      (variable
+        (environment_var
+          (identifier)))
+      (pipe_token)
+      (variable
+        (environment_var
+          (identifier)))))
+  (variable_definition
+    (variable
+      (environment_var
+        (identifier)))
+    (binary_expression
+      (variable
+        (environment_var
+          (identifier)))
+      (variable
+        (environment_var
+          (identifier)))))
+  (function_call
+    (method_name)
+    (parameter_call_list
+      (argument_calls
+        (unnamed_argument
+          (unary_expression
+            (variable
+              (environment_var
+                (identifier))))))))
+  (function_call
+    (variable
+      (environment_var
+        (identifier)))
+    (method_call
+      (method_name)
+      (parameter_call_list
+        (argument_calls
+          (unnamed_argument
+            (literal
+              (number
+                (integer)))))
+        (argument_calls
+          (unnamed_argument
+            (unary_expression
+              (variable
+                (environment_var
+                  (identifier)))))))))
+  (variable_definition
+    (variable
+      (environment_var
+        (identifier)))
+    (binary_expression
+      (variable
+        (environment_var
+          (identifier)))
+      (adverb)
+      (variable
+        (environment_var
+          (identifier))))))

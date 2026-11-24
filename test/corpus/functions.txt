@@ -212,9 +212,8 @@ Spaces in argument list with no commas
           (pipe_argument
             name: (identifier)
             value: (literal
-              (symbol)))
-          (pipe_argument
-            name: (identifier))
+              (symbol
+                (identifier))))
           (pipe_argument
             name: (identifier))
           (pipe_token))))))
@@ -1149,3 +1148,222 @@ parenthesized operator as callee with partial application
     (literal
       (number
         (integer)))))
+
+================================================================================
+The routine shorthand: a one-letter name called with a block
+================================================================================
+
+x = r { 1.yield; 2.yield };
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (variable_definition
+    (variable
+      (environment_var
+        (identifier)))
+    (function_call
+      (method_name)
+      (function_block
+        (function_call
+          (literal
+            (number
+              (integer)))
+          (method_call
+            (method_name)))
+        (function_call
+          (literal
+            (number
+              (integer)))
+          (method_call
+            (method_name)))))))
+
+================================================================================
+A call of a function whose name is one letter
+================================================================================
+
+f(a);
+o (a, b);
+f(a) { 1 };
+f {: x, x <- (1..3) };
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_call
+    (method_name)
+    (parameter_call_list
+      (argument_calls
+        (unnamed_argument
+          (variable
+            (environment_var
+              (identifier)))))))
+  (function_call
+    (method_name)
+    (parameter_call_list
+      (argument_calls
+        (unnamed_argument
+          (variable
+            (environment_var
+              (identifier)))))
+      (argument_calls
+        (unnamed_argument
+          (variable
+            (environment_var
+              (identifier)))))))
+  (function_call
+    (method_name)
+    (parameter_call_list
+      (argument_calls
+        (unnamed_argument
+          (variable
+            (environment_var
+              (identifier))))))
+    (function_block
+      (literal
+        (number
+          (integer)))))
+  (function_call
+    (method_name)
+    (list_comprehension
+      (variable
+        (environment_var
+          (identifier)))
+      (comprehension_generator
+        (variable
+          (environment_var
+            (identifier)))
+        (generator_arrow)
+        (collection
+          (arithmetic_series
+            (number
+              (integer))
+            (number
+              (integer))))))))
+
+================================================================================
+A named argument's value may be a sequence, or end with a semicolon
+================================================================================
+
+score.recordNRT(path, action: { File.delete(path) }.addFunc(action););
+f.value(a, b: x = 1; x + 1);
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_call
+    (variable
+      (local_var
+        (identifier)))
+    (method_call
+      (method_name)
+      (parameter_call_list
+        (argument_calls
+          (unnamed_argument
+            (variable
+              (local_var
+                (identifier)))))
+        (argument_calls
+          (named_argument
+            (identifier)
+            (function_call
+              (function_block
+                (function_call
+                  (class)
+                  (method_call
+                    (method_name)
+                    (parameter_call_list
+                      (argument_calls
+                        (unnamed_argument
+                          (variable
+                            (local_var
+                              (identifier)))))))))
+              (method_call
+                (method_name)
+                (parameter_call_list
+                  (argument_calls
+                    (unnamed_argument
+                      (variable
+                        (local_var
+                          (identifier)))))))))))))
+  (function_call
+    (variable
+      (environment_var
+        (identifier)))
+    (method_call
+      (method_name)
+      (parameter_call_list
+        (argument_calls
+          (unnamed_argument
+            (variable
+              (environment_var
+                (identifier)))))
+        (argument_calls
+          (named_argument
+            (identifier)
+            (binary_expression
+              (variable
+                (environment_var
+                  (identifier)))
+              (literal
+                (number
+                  (integer))))
+            (binary_expression
+              (variable
+                (environment_var
+                  (identifier)))
+              (literal
+                (number
+                  (integer))))))))))
+
+================================================================================
+A default with no equals sign before it
+================================================================================
+
+{ |start = 0, range -1| start + range };
+{ |a 1 b \x| a };
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_block
+    (parameter_list
+      (pipe_parameter_list
+        (pipe_token)
+        (pipe_argument
+          (identifier)
+          (literal
+            (number
+              (integer))))
+        (pipe_argument
+          (identifier)
+          (pipe_safe_unary_expression
+            (literal
+              (number
+                (integer)))))
+        (pipe_token)))
+    (binary_expression
+      (variable
+        (local_var
+          (identifier)))
+      (variable
+        (local_var
+          (identifier)))))
+  (function_block
+    (parameter_list
+      (pipe_parameter_list
+        (pipe_token)
+        (pipe_argument
+          (identifier)
+          (literal
+            (number
+              (integer))))
+        (pipe_argument
+          (identifier)
+          (literal
+            (symbol
+              (identifier))))
+        (pipe_token)))
+    (variable
+      (environment_var
+        (identifier)))))

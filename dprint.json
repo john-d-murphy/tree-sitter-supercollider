@@ -1,7 +1,0 @@
-{
-  "excludes": [],
-  "plugins": [
-    // specify plugin urls here
-    "https://plugins.dprint.dev/typescript-0.95.13.wasm"
-  ]
-}

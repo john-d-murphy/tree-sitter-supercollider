@@ -782,3 +782,222 @@ x = [Prand([nil, Pseq(#[24, 31]);]), 5];
       (literal
         (number
           (integer))))))
+
+================================================================================
+An event key may begin with a capital
+================================================================================
+
+(name: 70, CLR: 32, reset: 40);
+[CLR: { this.clear }];
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (event
+    (associative_item
+      (event_key)
+      (item
+        (literal
+          (number
+            (integer)))))
+    (associative_item
+      (event_key)
+      (item
+        (literal
+          (number
+            (integer)))))
+    (associative_item
+      (event_key)
+      (item
+        (literal
+          (number
+            (integer))))))
+  (collection
+    (associative_item
+      (event_key)
+      (item
+        (function_block
+          (function_call
+            (variable
+              (local_var
+                (identifier)))
+            (method_call
+              (method_name))))))))
+
+================================================================================
+A symbol as a key beside other keys
+================================================================================
+
+(type: \set, \id: 3);
+[\freq: 440, amp: 0.1];
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (event
+    (associative_item
+      (event_key)
+      (item
+        (literal
+          (symbol
+            (identifier)))))
+    (associative_item
+      (symbol
+        (identifier))
+      (item
+        (literal
+          (number
+            (integer))))))
+  (collection
+    (associative_item
+      (symbol
+        (identifier))
+      (item
+        (literal
+          (number
+            (integer)))))
+    (associative_item
+      (event_key)
+      (item
+        (literal
+          (number
+            (float)))))))
+
+================================================================================
+The placeholder as a bound of a series
+================================================================================
+
+(1..8).collect((1.._));
+f = (_, 3.._);
+a[_.._];
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_call
+    (collection
+      (arithmetic_series
+        (number
+          (integer))
+        (number
+          (integer))))
+    (method_call
+      (method_name)
+      (parameter_call_list
+        (argument_calls
+          (unnamed_argument
+            (collection
+              (arithmetic_series
+                (number
+                  (integer))
+                (partial))))))))
+  (variable_definition
+    (variable
+      (environment_var
+        (identifier)))
+    (collection
+      (arithmetic_series
+        (partial)
+        (number
+          (integer))
+        (partial))))
+  (indexed_collection
+    (variable
+      (environment_var
+        (identifier)))
+    (index_subrange
+      (partial)
+      (partial))))
+
+================================================================================
+A comprehension with space between its brace and colon
+================================================================================
+
+{ : x, x <- (1..5) };
+Pbind(\degree, p { :[x, y].postln, x<-(0..10), y<-(0..10), (x + y).isPrime }, \dur, 0.3);
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (list_comprehension
+    (variable
+      (environment_var
+        (identifier)))
+    (comprehension_generator
+      (variable
+        (environment_var
+          (identifier)))
+      (generator_arrow)
+      (collection
+        (arithmetic_series
+          (number
+            (integer))
+          (number
+            (integer))))))
+  (function_call
+    (class)
+    (parameter_call_list
+      (argument_calls
+        (unnamed_argument
+          (literal
+            (symbol
+              (identifier)))))
+      (argument_calls
+        (unnamed_argument
+          (function_call
+            (method_name)
+            (list_comprehension
+              (function_call
+                (collection
+                  (variable
+                    (environment_var
+                      (identifier)))
+                  (variable
+                    (environment_var
+                      (identifier))))
+                (method_call
+                  (method_name)))
+              (comprehension_generator
+                (variable
+                  (environment_var
+                    (identifier)))
+                (generator_arrow)
+                (collection
+                  (arithmetic_series
+                    (number
+                      (integer))
+                    (number
+                      (integer)))))
+              (comprehension_generator
+                (variable
+                  (environment_var
+                    (identifier)))
+                (generator_arrow)
+                (collection
+                  (arithmetic_series
+                    (number
+                      (integer))
+                    (number
+                      (integer)))))
+              (comprehension_filter
+                (function_call
+                  (code_block
+                    (binary_expression
+                      (variable
+                        (environment_var
+                          (identifier)))
+                      (variable
+                        (environment_var
+                          (identifier)))))
+                  (method_call
+                    (method_name))))))))
+      (argument_calls
+        (unnamed_argument
+          (literal
+            (symbol
+              (identifier)))))
+      (argument_calls
+        (unnamed_argument
+          (literal
+            (number
+              (float))))))))

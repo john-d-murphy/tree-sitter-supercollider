@@ -64,7 +64,6 @@ const PRECEDENCE = {
   association: 11,
   associative_item: 10,
   stringConcat: 16,
-  STRING: 2,
   partial: 15,
   call: 14,
   field: 13,
@@ -94,6 +93,124 @@ const PRECEDENCE = {
   code_block: 20,
 };
 
+// A binary operator, as sclang's lexer reads one (PyrLexer.cpp, binopchars):
+// any run of these characters, whatever it spells. `a <--> b` and `a *- b`
+// are each one operator, and a run that begins with a slash is an operator
+// unless the slash opens a comment. The operators the grammar names one by
+// one below are runs too; where both fit the same text the name wins, and a
+// longer run is always this.
+const OPERATOR = /([!@%&*\-+=|<>?]|\/[!@%&\-+=|<>?])[!@%&*\-+=|<>?\/]*|\//;
+
+// What an identifier is made of.
+const NAME = /(r#)?[a-zA-Zα-ωΑ-Ωµ_][a-zA-Zα-ωΑ-Ωµ\d_]*/;
+
+// sclang reserves none of the names of its control structures: `arg for;`
+// declares a variable like any other, and `for` then reads it.
+const CONTROL_NAMES = [
+  "if",
+  "while",
+  "for",
+  "forBy",
+  "case",
+  "switch",
+  "protect",
+  "try",
+];
+
+// The name of a variable or an argument, where it is declared or read.
+function name($) {
+  return choice(
+    $.identifier,
+    ...CONTROL_NAMES.map(word => alias(word, $.identifier)),
+  );
+}
+
+// The name a method is defined by: an identifier or, for a binary operator's
+// method (`== { |other| ... }`), the operator.
+function methodName($) {
+  return choice(
+    $.identifier,
+    // a one-letter name is its own token (an interpreter variable, where an
+    // expression can be)
+    /[a-z]/,
+    ...CONTROL_NAMES,
+    operatorName($),
+  );
+}
+
+// The value of an argument or of a list's element: `a; b; c` evaluates all
+// and is worth the last, and a semicolon may close it.
+function expressionSequence($) {
+  return seq($._object, repeat(seq(";", $._object)), optional(";"));
+}
+
+// `#[1, 2]`, `#Array[1, 2]`: an array made when the code is compiled.
+function literalArray($) {
+  return seq(
+    "#",
+    optional(alias($.class, $.collection_type)),
+    "[",
+    optional($._collection_sequence),
+    "]",
+  );
+}
+
+// The blocks that may follow a call, each a function or a list
+// comprehension and each one more argument to it (lang11d: blocklist1):
+// `f(a) { 1 } { 2 }`. The first is the field `block` or `comprehension`.
+function blockList($) {
+  return seq(
+    choice(
+      field("block", $.function_block),
+      field("comprehension", $.list_comprehension),
+    ),
+    repeat(choice($.function_block, $.list_comprehension)),
+  );
+}
+
+// An operator where a name is wanted: a method's name in a class, a callee
+// in parentheses. The ones listed are tokens of their own where an
+// expression or a function's arguments may begin.
+function operatorName($) {
+  return choice(
+    $._operator,
+    "*",
+    "-",
+    "!",
+    $.pipe_token,
+    "<",
+    ">",
+    "<>",
+  );
+}
+
+// A part of a series: the start, the step or the end.
+function seriesPart($) {
+  return seq(
+    repeat(seq($._object, ";")),
+    $._numeric_expression,
+    optional(";"),
+  );
+}
+
+// The equals sign of an assignment or a default, which the scanner reads
+// (see the externals). It is the node `=` it always was.
+function equals($) {
+  return alias($._equals, "=");
+}
+
+// A literal as sclang's grammar has one for a default (lang11d:
+// slotliteral): a number, negative or not, a character, a string, a symbol,
+// true, false, nil, inf, or a literal array.
+function slotLiteral($) {
+  return choice(
+    $.literal,
+    $.pipe_safe_unary_expression,
+    alias(alias(choice("nil", "inf"), $.builtin_var), $.variable),
+    alias(literalArray($), $.collection),
+  );
+}
+
 function sepBy1(sep, rule) {
   return seq(rule, repeat(seq(sep, rule)));
 }
@@ -110,9 +227,15 @@ module.exports = grammar({
 
   externals: $ => [
     $.block_comment,
-    $._space_separator,
     $.generator_arrow, // <- for list comprehensions, needs external scanner
     $.event_key, // identifier: for event literals
+    $._string_content, // a string's text: no comment opens inside it
+    $._error_sentinel, // never used: valid only while an error is recovered
+    // A pipe and an equals sign are those only where no operator character
+    // follows them directly: to sclang's lexer `|-`, `=-` and `|/*` are each
+    // one operator, wherever they stand. Only the scanner can look ahead.
+    $.pipe_token,
+    $._equals,
   ],
 
   // The name of a token that will match keywords for the purpose of the keyword extraction optimization.
@@ -133,8 +256,8 @@ module.exports = grammar({
     // [$._object, $._indexable_object],
 
     // duplication / if / calls
-    [$.duplicated_statement, $.function_call, $.if],
-    [$.function_call, $.binary_expression, $.if],
+    [$.duplicated_statement, $.function_call, $.if, $.while],
+    [$.function_call, $.binary_expression, $.if, $.while],
     // internal repetition ambiguity in indexed_collection
     // [$.indexed_collection],
 
@@ -147,28 +270,56 @@ module.exports = grammar({
     // block-style vs surrounding expression / nested switch
     // [$.switch],
 
-    // [$.binary_expression, $.pipe_argument],
-    // Add this line:
-    [$._object, $._pipe_safe_expression],
     [$._expression_statement, $._object],
     [$.instance_var, $.var_binding],
-
-    // List comprehension: generator (x <- ...) vs filter (any _object)
-    [$.comprehension_generator, $.comprehension_filter],
-    // List comprehension: binding (var x = ...) vs filter (any _object starting with var)
-    [$.comprehension_binding, $.comprehension_filter],
-    // List comprehension binding vs instance_var (both can be: var identifier ...)
-    [$.comprehension_binding, $.instance_var],
 
     // Class definition: bare identifier in class body could be instance_var declaration
     // or a variable reference in an expression
     [$.variable, $.class_def],
 
-    // Event vs code_block: (key: value) is event, (expr; expr) is code_block
-    [$.event, $.code_block],
+    // At the top of a file `Foo { a { ^1 } }` is a class with a method, and
+    // `Routine { loop { 1.wait } }.play` is a call with a block. Which it is
+    // may not show until the closing brace, so both are followed.
+    [$.class_def, $.function_call],
+
+    // `Array[slot] : ArrayedCollection { ... }` opens a class, and `Array[item]`
+    // is a list of one item: followed as far as it takes to tell.
+    [$.local_var, $.class_def],
+
+    // A line of variables that ends a file is one of the file's lines or its
+    // final expression.
+    [$.source_file, $._expression_statement],
+
 
     // expr.if(func, func) vs expr.if(obj, obj)
     [$._object, $.if],
+
+    // A control structure's name may be called like any other name
+    // (`if(a)`, `for { a }`, `x.if(a)`, `3.for(7) { }`): its own rule and
+    // the plain call are both followed, and where both fit to the end, its
+    // own rule is taken (the plain call's dynamic precedence is the lower).
+    [$.unnamed_argument, $.if],
+    [$.unnamed_argument, $.for],
+    [$.unnamed_argument, $.forby],
+    [$.unnamed_argument, $.case],
+    [$.unnamed_argument, $.switch],
+    [$.unnamed_argument, $.protect],
+    [$.unnamed_argument, $.try],
+    [$.function_call, $.while],
+    [$.function_call, $.protect],
+    [$.function_call, $.try],
+    [$.method_call, $.if],
+    // `3.for(7, { })` is the for rule's and `3.format` a method call: the
+    // integer is the rule's own or a number, as what follows the dot says.
+    [$.number, $.for, $.forby],
+
+    // `(a; b)` is statements, `(a; b : c)` a dictionary keyed by an
+    // expression and `(a; b .. c)` a series: which it is shows only at the
+    // colon or the two dots.
+    [$._expression_statement, $.associative_item, $.arithmetic_series],
+    [$._expression_statement, $.associative_item],
+    [$.associative_item, $.arithmetic_series],
+    [$.ref_expression, $.associative_item, $.arithmetic_series],
   ],
 
   rules: {
@@ -182,17 +333,38 @@ module.exports = grammar({
     source_file: $ =>
       optional(
         seq(
-          // Zero or more semicolon-terminated expressions
-          repeat(seq($._expression, ";")),
+          // Interpreted code is the body of a function, and may open with
+          // that function's arguments: `arg a; a + 1` (lang11d: cmdlinecode)
+          optional(field("params", $.parameter_list)),
+          repeat(
+            choice(
+              // A semicolon-terminated expression
+              seq($._expression, ";"),
+              // A line of variables ends with a semicolon of its own, and
+              // code may follow it. Where it is the last thing in a file
+              // it is also the final expression below, and `var x = 1;` is
+              // also an expression and its semicolon: both are followed
+              // (see the conflicts), and the dynamic precedence leaves a
+              // file that parsed without this reading the tree it had.
+              prec.dynamic(-1, $.variable_definition_sequence),
+              // A class definition or extension needs no semicolon after it:
+              // a class file is one after another with nothing between. The
+              // precedence settles a file that ends with one: it is this, not
+              // the final expression below.
+              prec(1, $.class_def),
+            ),
+          ),
           // Optional final expression (no semicolon required)
           optional($._expression),
         ),
       ),
 
+    // A class definition is not one of these: it stands only at the top of a
+    // file (source_file). Anywhere an expression can be, `Routine { ... }` is
+    // a call with a block.
     _expression: $ =>
       choice(
         $.function_block,
-        $.class_def,
         $._expression_statement,
       ),
 
@@ -250,10 +422,17 @@ module.exports = grammar({
     //   {: x, x <- (1..3), y <- (1..x) }
     //   {: z, x <- (1..20), var z = (x*x-x) div: 2, z.odd }
     //   {:x, x<-(1..), :: "side effect".postln }
+    //   { : x, x <- (1..3) }  (space may stand between the brace and the
+    //   colon; it is still the one token that opens a comprehension)
     list_comprehension: $ =>
       seq(
-        "{:",
-        field("body", $._object),
+        choice(
+          alias(token(seq("{", /\s*/, ":")), "{:"),
+          // `{; x, x <- y }`: the same, opened with a semicolon (lang11d:
+          // generator)
+          alias(token(seq("{", /\s*/, ";")), "{;"),
+        ),
+        field("body", expressionSequence($)),
         ",",
         sepBy1(",", $._comprehension_clause),
         "}",
@@ -277,6 +456,10 @@ module.exports = grammar({
         100,
         seq(
           field("name", $._object),
+          // a second name: `{: x, x z <- y }` (lang11d: qual)
+          optional(
+            field("name", choice($.identifier, alias(/[a-z]/, $.identifier))),
+          ),
           $.generator_arrow,
           field("collection", $._object),
         ),
@@ -289,7 +472,7 @@ module.exports = grammar({
         seq(
           "var",
           field("name", $.identifier),
-          "=",
+          equals($),
           field("value", $._object),
         ),
       ),
@@ -299,7 +482,8 @@ module.exports = grammar({
       prec(
         2,
         seq(
-          "::",
+          // two colons, which may stand apart: `: : x.postln`
+          alias(token(seq(":", /\s*/, ":")), "::"),
           field("effect", $._object),
         ),
       ),
@@ -309,7 +493,8 @@ module.exports = grammar({
       prec(
         2,
         seq(
-          ":while",
+          // a colon and the name, which may stand apart: `: while x < 3`
+          alias(token(seq(":", /\s*/, "while")), ":while"),
           field("condition", $._object),
         ),
       ),
@@ -337,7 +522,7 @@ module.exports = grammar({
         1,
         seq(
           field("name", $.variable),
-          "=",
+          equals($),
           field("value", $.function_block),
         ),
       ),
@@ -350,6 +535,7 @@ module.exports = grammar({
           "(",
           optional(field("arguments", $.parameter_call_list)),
           ")",
+          optional(blockList($)),
         ),
       ),
 
@@ -359,43 +545,85 @@ module.exports = grammar({
         choice(
           // Free / namespaced calls, including Class(...) and ar(SinOsc, 110)
           // Optionally followed by a trailing block: collect((1..10)) { |n| n.squared }
+          // (a one-letter name is a token of its own)
           seq(
-            field("callee", choice(alias($.identifier, $.method_name), $.class)),
+            field(
+              "callee",
+              choice(
+                alias($.identifier, $.method_name),
+                alias(/[a-z]/, $.method_name),
+                $.class,
+              ),
+            ),
             "(",
             optional(field("arguments", $.parameter_call_list)),
             ")",
-            optional(
+            optional(blockList($)),
+          ),
+          // Function call with trailing blocks: fork { }, Routine { }, Task { },
+          // `r { }`, all {: x, x <- (1..10) }
+          seq(
+            field(
+              "callee",
               choice(
-                field("block", $.function_block),
-                field("comprehension", $.list_comprehension),
+                alias($.identifier, $.method_name),
+                alias(/[a-z]/, $.method_name),
+                $.class,
+              ),
+            ),
+            blockList($),
+          ),
+          // A control structure's name is a name like any other to sclang:
+          // written in a way its own rule below does not know (`if(a)`,
+          // `for { a }`), the call is a plain call.
+          // The precedences, static and dynamic, are under every other: where
+          // its own rule fits, that is what is read.
+          prec.dynamic(
+            -1,
+            prec(
+              -1,
+              seq(
+                field(
+                  "callee",
+                  alias(choice(...CONTROL_NAMES), $.method_name),
+                ),
+                choice(
+                  seq(
+                    "(",
+                    optional(field("arguments", $.parameter_call_list)),
+                    ")",
+                    optional(blockList($)),
+                  ),
+                  blockList($),
+                ),
               ),
             ),
           ),
-          // Function call with trailing block (lowercase identifiers only)
-          // NOTE: $.class is intentionally NOT included here to avoid conflict with class_def.
-          // Class { } at expression level parses as class_def, not function_call.
-          // Patterns like Routine { } or Task { } work via Routine.new { } or are
-          // handled by the Class(...) call syntax with arguments.
-          seq(
-            field("callee", alias($.identifier, $.method_name)),
-            field("block", $.function_block),
-          ),
-          // Function call with trailing list comprehension: all {: x, x <- (1..10) }
-          seq(
-            field("callee", alias($.identifier, $.method_name)),
-            field("comprehension", $.list_comprehension),
-          ),
           // Parenthesized binary operator as callee: (+++)(a, 99, _)
-          // sclang lang11d msgsend: '(' binop2 ')' '(' arglist ')'.
+          // sclang lang11d msgsend: '(' binop2 ')' '(' arglist ')' blocklist
+          // and '(' binop2 ')' blocklist1.
           // Exists to pass an operator's adverb dynamically — infix adverbs
           // (a +++.1 b) are compile-time literals. See Syntax-Shortcuts.
           seq(
             "(",
-            field("callee", alias(token(/[-!@%&*+=|<>?\/]+/), $.method_name)),
+            field(
+              "callee",
+              alias(
+                // an operator, or a name with its colon: `(foo:)(1, 2)`
+                choice(operatorName($), $.event_key),
+                $.method_name,
+              ),
+            ),
             ")",
-            "(",
-            optional(field("arguments", $.parameter_call_list)),
-            ")",
+            choice(
+              seq(
+                "(",
+                optional(field("arguments", $.parameter_call_list)),
+                ")",
+                optional(blockList($)),
+              ),
+              blockList($),
+            ),
           ),
           // Instance method (chainable)
           seq(
@@ -405,6 +633,8 @@ module.exports = grammar({
                 $.method_call,
                 $.instance_variable_setter_call,
                 $.apply_call,
+                // receiver.[index]: an index written as a message
+                seq(".", $._index),
               ),
             ),
           ),
@@ -415,7 +645,18 @@ module.exports = grammar({
       prec.left(
         seq(
           ".",
-          field("name", alias($.identifier, $.method_name)),
+          // A method may be called by a control structure's name. Where
+          // `x.if ...` is written as the if rule knows it, it is that rule's.
+          field(
+            "name",
+            choice(
+              alias($.identifier, $.method_name),
+              ...CONTROL_NAMES
+                .filter(word => word != "if")
+                .map(word => alias(word, $.method_name)),
+              prec.dynamic(-20, alias("if", $.method_name)),
+            ),
+          ),
           // receiver.method(args...) or receiver.method { ... }
           optional(
             seq(
@@ -427,14 +668,22 @@ module.exports = grammar({
           // Optional trailing block(s): .if{ true } or .if{ true }{ false }
           // A trailing list comprehension is also a function argument:
           // d.keyDownAction.addFunc {:x, x<-(1..), :: "...".postf(x) }
+          // Any number may follow, of either kind (lang11d: blocklist).
           optional(
-            choice(
-              seq(
+            seq(
+              choice(
                 field("block", $.function_block),
-                // Second trailing block only valid when first is present
-                optional(field("else_block", $.function_block)),
+                field("comprehension", $.list_comprehension),
               ),
-              field("comprehension", $.list_comprehension),
+              optional(
+                seq(
+                  choice(
+                    field("else_block", $.function_block),
+                    $.list_comprehension,
+                  ),
+                  repeat(choice($.function_block, $.list_comprehension)),
+                ),
+              ),
             ),
           ),
         ),
@@ -466,14 +715,24 @@ module.exports = grammar({
       seq(
         repeat(
           choice(
-            // variable_definition_sequence includes its own semicolon
-            $.variable_definition_sequence,
+            // variable_definition_sequence includes its own semicolon. The
+            // precedence keeps it a line of its own before a return, not
+            // the expression the return follows.
+            prec(1, $.variable_definition_sequence),
+            // A primitive call needs no semicolon after it, and may have one
+            seq($.primitive, optional(";")),
             // Other expressions need semicolons added
             prec.right(1, seq($._expression, ";")),
           ),
         ),
-        // Final expression (no semicolon)
-        $._expression,
+        // Final expression (no semicolon), or, where a method is nothing but
+        // its primitive, that. A return that ends the body needs no semicolon
+        // before it: `this.do { ... } ^res`.
+        choice(
+          $._expression,
+          $.primitive,
+          seq($._expression, $.return_statement),
+        ),
         optional(";"),
       ),
 
@@ -497,6 +756,12 @@ module.exports = grammar({
               prec.dynamic(100, field("pairs", $._paired_associative_sequence)),
               // Prefer statement-style blocks when ambiguous
               prec(2, $._expression_sequence),
+              // Interpreted code that is all in parentheses may open with
+              // arguments there: `(arg a; a + 1)` (lang11d: cmdlinecode)
+              seq(
+                field("params", $.parameter_list),
+                optional($._expression_sequence),
+              ),
               $._paren_expression_list,
             ),
           ),
@@ -515,6 +780,11 @@ module.exports = grammar({
         optional(field("body", $._expression_sequence)),
         "}",
       ),
+
+    // A call of a primitive: `_BasicNew`, on a line of its own at the head of
+    // a method. A name that begins with an underscore and a capital is always
+    // one; an identifier is the same length, so the precedence chooses.
+    primitive: $ => token(prec(1, /_[A-Z][a-zA-Z\d_]*/)),
 
     _function_content: $ =>
       choice(
@@ -541,78 +811,52 @@ module.exports = grammar({
           optional(alias($.variable_argument, $.argument)),
           ";",
         ),
-        // 2. Pipe style (CHANGE THIS)
-        // Was: seq("|", sepBy(..., $.argument), "|")
-        // Now: Use the new rule we created!
         $.pipe_parameter_list,
       ),
 
     // 2. Standard 'arg' declaration (e.g., "arg a = 1;")
     argument: $ =>
       seq(
-        field("name", $.identifier),
+        field("name", name($)),
         optional($.argument_default),
       ),
 
-    argument_default: $ => seq("=", field("value", $._expression)),
-
-    // Safe expressions that cannot contain | as a binary operator
-    _pipe_safe_expression: $ =>
+    // `= value`, or the older `name(value)`
+    argument_default: $ =>
       choice(
-        $.literal,
-        $.variable,
-        $.function_call,
-        $.function_block,
-        $.code_block,
-        $.collection,
-        $.indexed_collection,
-        $.partial,
-        $.duplicated_statement,
-        $.pipe_safe_unary_expression,
-        $.pipe_safe_nil_check,
-        $.association,
-        $.control_structure,
-        $.event,
-        prec(2, $.class),
+        seq(equals($), field("value", $._expression)),
+        seq("(", field("value", $._expression), ")"),
       ),
 
-    // Unary expressions that use safe expressions (no | binary op)
-    pipe_safe_unary_expression: $ => {
-      const table = [
-        [PRECEDENCE.unary, "-"],
-        [PRECEDENCE.unary, "*"],
-        [PRECEDENCE.unary, ":"],
-        [PRECEDENCE.unary, "!"],
-      ];
-
-      return choice(
-        ...table.map(([precedence, operator]) =>
-          prec.left(
-            precedence,
-            seq(
-              field("operator", operator),
-              field("right", $._pipe_safe_expression),
-            ),
-          )
-        ),
-      );
-    },
-
-    // Nil check that uses safe expressions (no | binary op)
-    pipe_safe_nil_check: $ =>
-      prec.left(
-        seq(
-          $._pipe_safe_expression,
-          choice("?", "!?", "??"),
-          $._pipe_safe_expression,
+    // A negative number as a default: `|a = -1|`, `|a -inf|`.
+    pipe_safe_unary_expression: $ =>
+      seq(
+        field("operator", "-"),
+        field(
+          "right",
+          choice($.literal, alias(alias("inf", $.builtin_var), $.variable)),
         ),
       ),
 
-    // Pipe argument uses restricted expressions
+    // Between pipes a default is a literal or an expression in parentheses,
+    // and nothing else (lang11d: slotdef). `|a = b|` and `|a = 1 + 2|` are
+    // errors to sclang, and are errors here.
     pipe_argument: $ =>
       seq(
-        field("name", $.identifier),
-        field("value", optional(seq("=", $._pipe_safe_expression))),
+        field("name", name($)),
+        field(
+          "value",
+          optional(
+            choice(
+              seq(equals($), choice(slotLiteral($), $.code_block)),
+              // the older `name(value)`
+              seq("(", $._expression, ")"),
+              // before a literal the equals sign may be left out:
+              // `|start = 0, range -1|`
+              slotLiteral($),
+            ),
+          ),
+        ),
       ),
 
     pipe_parameter_list: $ =>
@@ -633,7 +877,7 @@ module.exports = grammar({
       ),
 
     // see https://doc.sccode.org/Reference/Functions.html#Variable%20Arguments
-    variable_argument: $ => seq("...", field("name", $.identifier)),
+    variable_argument: $ => seq("...", field("name", name($))),
 
     // When supplying arguments to a function call
     parameter_call_list: $ => prec.left(seq(sepBy1(",", $.argument_calls), optional(","))),
@@ -648,15 +892,19 @@ module.exports = grammar({
     // Also allows statement sequences like foo(a; b; c) where the value is c
     unnamed_argument: $ =>
       choice(
-        // Statement sequence: a; b; c - evaluates all, value is last
+        expressionSequence($),
+        // `*args`: an array handed on as the arguments it holds. sclang has
+        // the star here and nowhere else (lang11d: arglistv1).
         seq(
-          $._object,
-          repeat1(seq(";", $._object)),
+          alias($._starred, $.unary_expression),
+          repeat(seq(";", $._object)),
           optional(";"),
         ),
-        // Single expression (possibly with trailing semicolon)
-        seq($._object, optional(";")),
       ),
+
+    // The node is the unary_expression it was when the star was an operator
+    // of any expression.
+    _starred: $ => seq(field("operator", "*"), field("right", $._object)),
 
     named_argument: $ =>
       prec.left(
@@ -665,9 +913,9 @@ module.exports = grammar({
           "name",
           choice(
             seq(
-              choice($.symbol, $.identifier),
-              choice("=", ":"),
-              $._object,
+              choice($.symbol, name($)),
+              choice(equals($), ":"),
+              expressionSequence($),
             ),
             // Single-letter names lex as environment_var's /[a-z]/ token,
             // so they need their own branch (`f.value(2, c: 3)`). Restricted
@@ -677,7 +925,7 @@ module.exports = grammar({
             seq(
               alias(/[a-z]/, $.identifier),
               ":",
-              $._object,
+              expressionSequence($),
             ),
           ),
         ),
@@ -721,75 +969,66 @@ module.exports = grammar({
     // Radix notation: 2r10010 (binary), 8r777 (octal), 16rFF (hex), etc.
     radix_integer: $ => /\d+r[a-zA-Z0-9]+/,
     float: $ => /\d+\.\d+/,
-    exponential: $ => /-?\d+(\.\d+)?[eE]-?\d+/,
-    // Musical accidentals: 1b (flat), 5s (sharp) - used in degree notation
+    exponential: $ => /-?\d+(\.\d+)?[eE][-+]?\d+/,
+    // Musical accidentals: 1b (flat), 5s (sharp) - used in degree notation,
+    // any number of them (2ss), and cents after (2s50)
     // Lexer prefers longer match, so 1b matches accidental rather than integer+identifier
-    accidental: $ => /\d+[bs]/,
+    accidental: $ => /\d+(b+|s+)\d*/,
 
     symbol: $ =>
       choice(
+        // The name runs on from the backslash and is all the symbol's: in
+        // `(\id: 3)` the colon is not part of it, as it would be of a
+        // selector (`x id: 3`), which the precedence is there to outrank.
         prec.left(
           seq(
             "\\",
-            optional(choice($.identifier, /[0-9]+/, $.escape_sequence)),
+            optional(
+              choice(
+                alias(token.immediate(prec(1, NAME)), $.identifier),
+                token.immediate(/[0-9]+/),
+                $.escape_sequence,
+              ),
+            ),
           ),
         ),
-        prec.left(
-          seq(
-            "'",
-            repeat(choice(
-              token.immediate(/[^'\\]+/), // chars except quote/backslash
-              token.immediate(seq("\\", /./)), // escape: backslash + any char
-            )),
-            "'",
-          ),
-        ),
+        // One token from quote to quote, so that nothing inside it is read
+        // as anything else: `'/*'` holds no comment. A backslash takes the
+        // character after it, whatever that is.
+        token(seq("'", repeat(choice(/[^'\\]/, /\\[\s\S]/)), "'")),
       ),
 
-    char: $ => /\$(\\.|.)/,
+    // The character is whatever follows the dollar sign, a line break too;
+    // after a backslash, whatever follows that.
+    char: $ => /\$(\\[\s\S]|[^\\])/,
 
-    string: $ =>
+    // Strings that stand side by side are one string to sclang:
+    // "one part, " "and the rest".
+    string: $ => prec.right(repeat1($._string_part)),
+
+    _string_part: $ =>
       seq(
         "\"",
-        repeat(
-          choice(
-            token.immediate(
-              prec(PRECEDENCE.STRING, /[^"\\]+/),
-            ),
-            $.escape_sequence,
-          ),
-        ),
+        // The text is the scanner's to read: it alone can tell that the
+        // `/*` of "/* not a comment" opens nothing.
+        repeat(choice($._string_content, $.escape_sequence)),
         "\"",
       ),
 
     bool: $ => choice("true", "false"),
 
-    escape_sequence: $ =>
-      token.immediate(
-        seq(
-          "\\",
-          choice(
-            /[^xu0-7]/,
-            /[0-7]{1,3}/,
-            /x[0-9a-fA-F]{2}/,
-            /u[0-9a-fA-F]{4}/,
-            /u\{[0-9a-fA-F]+\}/,
-          ),
-        ),
-      ),
+    // A backslash takes the character after it, whatever that is: sclang
+    // knows \n, \r, \t, \f and \v, and any other stands for itself.
+    escape_sequence: $ => token.immediate(/\\[\s\S]/),
 
     /////////////////
     // 	Variables  //
     /////////////////
 
-    variable: $ =>
-      choice(
-        $.environment_var,
-        $.local_var,
-        $.classvar,
-        $.builtin_var,
-        $.instance_var,
-      ),
+    // A name that stands for a value. The variables a class declares
+    // (`var <>a`, `classvar b`) are no values: sclang refuses them anywhere
+    // but in the body of a class, and so they are named only there.
+    variable: $ => choice($.environment_var, $.local_var, $.builtin_var),
 
     builtin_var: $ =>
       field(
@@ -811,7 +1050,7 @@ module.exports = grammar({
       prec(
         PRECEDENCE.localvar,
         choice(
-          field("name", $.identifier),
+          field("name", name($)),
           // seq("var", field("name", $.identifier)),
         ),
       ),
@@ -848,11 +1087,15 @@ module.exports = grammar({
     // helper: one name (with optional initializer) in a `var` list
     var_binding: $ =>
       seq(
-        field("name", $.identifier),
+        field("name", name($)),
         optional(
-          seq(
-            "=",
-            field("value", choice($.class, $._object)),
+          choice(
+            seq(
+              equals($),
+              field("value", choice($.class, $._object)),
+            ),
+            // the older `name(value)`
+            seq("(", field("value", expressionSequence($)), ")"),
           ),
         ),
       ),
@@ -873,7 +1116,7 @@ module.exports = grammar({
         PRECEDENCE.vardef,
         seq(
           field("name", $.variable),
-          "=",
+          equals($),
           field("value", choice($.class, $._object)),
         ),
       ),
@@ -894,7 +1137,7 @@ module.exports = grammar({
             // Without rest: # a, b, c = value
             sepBy1(",", field("name", $.identifier)),
           ),
-          "=",
+          equals($),
           field("value", $._object),
         ),
       ),
@@ -905,12 +1148,22 @@ module.exports = grammar({
 
     return_statement: $ => prec.left(PRECEDENCE.unary, seq("^", $._object)),
 
+    // Where a class definition and a call with a block both fit to the end
+    // (`Foo { bar { ^1 } }` standing alone), it is the class definition.
     class_def: $ =>
-      prec(
+      prec.dynamic(
+        10,
+        prec(
         PRECEDENCE.class_def,
         seq(
           optional("+"),
           $.class,
+          // `Array[slot]`, `String[char]`: what an indexed class holds
+          // (a variable's precedence, so that neither reading of the name
+          // inside outranks the other: see the conflicts)
+          optional(
+            prec(PRECEDENCE.localvar, seq("[", optional($.identifier), "]")),
+          ),
           optional(seq(":", alias($.class, $.parent_class))),
           "{",
           repeat(
@@ -932,29 +1185,53 @@ module.exports = grammar({
                         alias($.local_var, $.instance_var),
                         $.instance_var,
                         $.classvar,
-                        $.const,
                       ),
-                      "=",
+                      equals($),
                       $._object,
                     ),
                   ),
                 ),
                 ";",
               ),
-              // Instance method
+              // Constants: each has a value, and the comma between two may
+              // be left out (lang11d: constdeflist optcomma constdef).
               seq(
-                alias($.identifier, $.instance_method_name),
-                $.function_block,
+                $.const,
+                equals($),
+                $._object,
+                repeat(
+                  seq(
+                    optional(","),
+                    choice(alias($.local_var, $.instance_var), $.instance_var),
+                    equals($),
+                    $._object,
+                  ),
+                ),
+                ";",
               ),
-              // Class method
-              seq(
-                $.class_method_marker,
-                alias($.identifier, $.class_method_name),
+              // Instance method. A lone `*` is its name or the class method
+              // marker; what follows (a block, or a name) says which it is.
+              // The precedence is a call's, so that neither outranks the
+              // other and the conflict declared above is left to be settled
+              // by what follows.
+              prec.right(PRECEDENCE.call, seq(
+                alias(methodName($), $.instance_method_name),
                 $.function_block,
-              ),
+              )),
+              // Class method (a call's precedence, as for the instance method)
+              // The marker is the `*` of an expression under another name,
+              // not a rule of its own: where a class definition and a call
+              // with a block are both being followed, a rule would have to
+              // be reduced before the name after it is seen.
+              prec.right(PRECEDENCE.call, seq(
+                alias("*", $.class_method_marker),
+                alias(methodName($), $.class_method_name),
+                $.function_block,
+              )),
             ),
           ),
           "}",
+        ),
         ),
       ),
 
@@ -988,7 +1265,18 @@ module.exports = grammar({
             $.variable,
             $.collection,
             $.function_call,
-            seq("(", $._object, ")"),
+            seq("(", expressionSequence($), ")"),
+            // `` `(a: 1) ``, `` `{ 1 } ``, `` `a[0] ``, `` ``a ``, `` `-1 ``,
+            // `` `Object ``: sclang takes any expression here (lang11d:
+            // '`' expr).
+            $.event,
+            $.function_block,
+            $.list_comprehension,
+            $.indexed_collection,
+            $.ref_expression,
+            $.unary_expression,
+            $.class,
+            $.partial,
           ),
         ),
       ),
@@ -1040,11 +1328,7 @@ module.exports = grammar({
               // last. lang11d: arrayelems1 elements are exprseq, and
               // exprseq is `exprn optsemi` — so a trailing `;` inside an
               // element is legal sclang: [x, foo(y);]
-              seq(
-                $._object,
-                repeat(seq(";", $._object)),
-                optional(";"),
-              ),
+              expressionSequence($),
             ),
           ),
         ),
@@ -1064,37 +1348,50 @@ module.exports = grammar({
       ),
 
     associative_item: $ =>
-      prec.dynamic(
-        50, // High dynamic precedence to win over unary : interpretation
-        prec(
-          PRECEDENCE.associative_item,
-          choice(
-            // key: value using event_key token (identifier immediately followed by :)
-            seq(
-              field("key", $.event_key),
-              field("value", alias($._object, $.item)),
+      choice(
+        prec.dynamic(
+          50, // High dynamic precedence to win over unary : interpretation
+          prec(
+            PRECEDENCE.associative_item,
+            choice(
+              // key: value, the key a name with its colon directly after it
+              // (sclang's KEYBINOP): the key is the symbol of that name.
+              seq(
+                field("key", $.event_key),
+                field("value", alias(expressionSequence($), $.item)),
+              ),
+              // symbol key: \key: value
+              seq(
+                field("key", $.symbol),
+                ":",
+                field("value", alias(expressionSequence($), $.item)),
+              ),
+              // string key: "key": value
+              seq(
+                field("key", $.string),
+                ":",
+                field("value", alias(expressionSequence($), $.item)),
+              ),
+              // number key: 0: value, 1: value (for Prewrite patterns etc)
+              seq(
+                field("key", $.number),
+                ":",
+                field("value", alias(expressionSequence($), $.item)),
+              ),
+              // keyObj -> valueObj
+              $.association,
             ),
-            // symbol key: \key: value
-            seq(
-              field("key", $.symbol),
-              ":",
-              field("value", alias($._object, $.item)),
-            ),
-            // string key: "key": value
-            seq(
-              field("key", $.string),
-              ":",
-              field("value", alias($._object, $.item)),
-            ),
-            // number key: 0: value, 1: value (for Prewrite patterns etc)
-            seq(
-              field("key", $.number),
-              ":",
-              field("value", alias($._object, $.item)),
-            ),
-            // keyObj -> valueObj
-            $.association,
           ),
+        ),
+        // Any other expression as the key, its colon apart from it:
+        // `(a : 1)` is keyed by the value of the variable a, where `(a: 1)`
+        // is keyed by the symbol \a. No precedence: whether `(a; b` goes on
+        // as statements or as a key shows only at the colon, so both are
+        // followed (see the conflicts).
+        seq(
+          field("key", expressionSequence($)),
+          ":",
+          field("value", alias(expressionSequence($), $.item)),
         ),
       ),
 
@@ -1147,12 +1444,23 @@ module.exports = grammar({
 
     _indexable_object: $ =>
       choice(
+        // `_[0]`: the index of whatever is passed
+        $.partial,
         $.collection,
         $.variable,
+        // a literal of any kind, bare as the string always was here
+        $.number,
+        $.symbol,
+        $.char,
         $.string,
+        $.bool,
         $.function_call,
         prec.left(1, $.code_block),
         $.control_structure,
+        // `(a: 1)[\a]`, `{ 1 }[0]`, `{: x, x <- y }[0]`
+        $.event,
+        $.function_block,
+        $.list_comprehension,
       ),
 
     indexed_collection: $ =>
@@ -1172,52 +1480,67 @@ module.exports = grammar({
           ",",
           $._numeric_expression,
           "..",
-          $._numeric_expression,
+          optional($._numeric_expression),
         ),
       ),
 
-    _index: $ =>
-      seq(
+    _index: $ => {
+      // An index may be any expression. A number, a symbol, a string, a
+      // character or a boolean stands as itself, not as a `literal`; and
+      // `(key: value)` is here the `code_block` a numeric expression has.
+      const item = choice(
+        $._numeric_expression,
+        $.symbol,
+        $.string,
+        $.char,
+        $.bool,
+        $.class,
+        $.association,
+        $.function_block,
+        $.control_structure,
+        $.collection,
+        $.duplicated_statement,
+        $.list_comprehension,
+        $.ref_expression,
+      );
+
+      return seq(
         "[",
         field(
           "index",
           choice(
-            // Multi-index: a[2, 3] or a[1, 2, 3] for multi-dimensional arrays
-            // Note: subranges in multi-index (a[1, 3..]) not supported due to grammar conflict
-            seq(
-              $._numeric_expression,
-              repeat1(seq(",", $._numeric_expression)),
-            ),
-            // Single index
-            $._numeric_expression,
+            // One index, or several: a[2, 3] for multi-dimensional arrays.
+            // Each is a sequence of expressions: a[b; c]
+            sepBy1(",", seq(item, repeat(seq(";", item)), optional(";"))),
             $.index_subrange,
-            $.symbol,
-            $.string,
           ),
         ),
         "]",
-      ),
+      );
+    },
 
+    // Each part of a series is a sequence of expressions, worth its last:
+    // `(a; b .. c)` (lang11d: valrange2, of exprseq).
     arithmetic_series: $ =>
       seq(
         "(",
         choice(
           // (start, step .. end) - series with explicit step
           seq(
-            $._numeric_expression,
+            seriesPart($),
             ",",
-            $._numeric_expression,
+            seriesPart($),
             "..",
-            $._numeric_expression,
+            seriesPart($),
           ),
-          // (.. end) - from beginning to end
-          seq("..", $._numeric_expression),
+          // (.. end) - from beginning to end; (:.. end), the same as a stream
+          seq(optional(":"), "..", seriesPart($)),
           // (start .. end) - simple range
-          seq($._numeric_expression, "..", $._numeric_expression),
+          seq(seriesPart($), "..", seriesPart($)),
           // (start ..) - open-ended range (infinite series)
-          seq($._numeric_expression, ".."),
+          seq(seriesPart($), ".."),
           // (start, step ..) - open-ended with step
-          seq($._numeric_expression, ",", $._numeric_expression, ".."),
+          seq(seriesPart($), ",", seriesPart($), ".."),
         ),
         ")",
       ),
@@ -1228,7 +1551,31 @@ module.exports = grammar({
 
     // Adverbs modify binary operators for collection operations
     // Examples: +.s (short), +.x (cross), +.t (table), +.f (flat), +.0, +.1
-    adverb: $ => seq(".", choice(/[a-z]/, /-?[0-9]+/)),
+    // An adverb is a name of any length (`<<>.in1`), an integer, or an
+    // expression in parentheses (lang11d: adverb).
+    adverb: $ =>
+      seq(
+        ".",
+        choice(
+          /[a-z]/,
+          alias($.identifier, "name"),
+          /-?[0-9]+/,
+          // Any other number is read whole here as it is everywhere, so
+          // that `a +.2b` is the accidental sclang's lexer makes of it and
+          // not an integer and a name.
+          alias(
+            choice(
+              $.float,
+              $.hexinteger,
+              $.radix_integer,
+              $.exponential,
+              $.accidental,
+            ),
+            "number",
+          ),
+          seq("(", expressionSequence($), ")"),
+        ),
+      ),
 
     binary_expression: $ => {
       const table = [
@@ -1259,7 +1606,7 @@ module.exports = grammar({
           PRECEDENCE.multiplicative,
           choice("*", "/", "%", prec.left("**")),
         ],
-        [PRECEDENCE.assign, "="],
+        [PRECEDENCE.assign, equals($)],
 
         // String concatenation
         [PRECEDENCE.stringConcat, "+/+"],
@@ -1270,8 +1617,8 @@ module.exports = grammar({
         // Function composition
         [PRECEDENCE.compose, "<>"],
 
-        // Composed operators |op| - lift operator to work with functions/patterns
-        [PRECEDENCE.compose, /\|[=<>!+\-*/%&|@]+\|/],
+        // Any other run of operator characters: `a <-- b`, `a |==| b`
+        [PRECEDENCE.compose, alias($._operator, $.operator)],
       ];
 
       return choice(
@@ -1291,7 +1638,6 @@ module.exports = grammar({
     unary_expression: $ => {
       const table = [
         [PRECEDENCE.unary, "-"],
-        [PRECEDENCE.unary, "*"],
         // (:1..) style
         [PRECEDENCE.unary, ":"],
         [PRECEDENCE.unary, "!"],
@@ -1312,7 +1658,7 @@ module.exports = grammar({
 
     class: $ => prec(PRECEDENCE.class, field("name", /[A-Z]+[a-zA-Z\d_]*/)),
 
-    identifier: $ => /(r#)?[a-zA-Zα-ωΑ-Ωµ_][a-zA-Zα-ωΑ-Ωµ\d_]*/,
+    identifier: $ => NAME,
 
     // Nil check
     // @FIXME: Should be a binary operator
@@ -1337,6 +1683,8 @@ module.exports = grammar({
         $.code_block,
         $.indexed_collection,
         $.nil_check,
+        // `(1.._)`: the series up to whatever is passed
+        $.partial,
       ),
 
     ////////////////////
@@ -1367,22 +1715,42 @@ module.exports = grammar({
     // protect { normalCode } { onExitCode }
     // The onExit function is always called, even if normalCode throws
     protect: $ =>
-      prec.right(
+      choice(
+        prec.right(
+          seq(
+            "protect",
+            field("body", $.function_block),
+            optional(field("onExit", $.function_block)),
+          ),
+        ),
+        // protect(normalFunc, onExitFunc): the same, written as a call
         seq(
           "protect",
-          field("body", $.function_block),
-          optional(field("onExit", $.function_block)),
+          "(",
+          field("body", $._object),
+          optional(seq(",", field("onExit", $._object))),
+          ")",
         ),
       ),
 
     // try { code } { onErrorCode }
     // If code throws, onErrorCode is called with the error
     try: $ =>
-      prec.right(
+      choice(
+        prec.right(
+          seq(
+            "try",
+            field("body", $.function_block),
+            optional(field("onError", $.function_block)),
+          ),
+        ),
+        // try(func, onErrorFunc): the same, written as a call
         seq(
           "try",
-          field("body", $.function_block),
-          optional(field("onError", $.function_block)),
+          "(",
+          field("body", $._object),
+          optional(seq(",", field("onError", $._object))),
+          ")",
         ),
       ),
 
@@ -1392,7 +1760,6 @@ module.exports = grammar({
         prec.dynamic(
           1000, // <- VERY high dynamic precedence
           prec.right(
-            100,
             seq(
               field("name", "if"),
               "(",
@@ -1474,11 +1841,15 @@ module.exports = grammar({
             ")",
           ),
         ),
-        // testFunc.while( bodyFunc );
-        seq(
-          field("expression", $._object),
-          field("name", ".while"),
-          field("body_func", $.function_block),
+        // testFunc.while { bodyFunc }. The precedence is over a method call's:
+        // written just so, it is this.
+        prec.left(
+          1,
+          seq(
+            field("expression", $._object),
+            field("name", seq(".", "while")),
+            field("body_func", $.function_block),
+          ),
         ),
         // while testFunc bodyFunc;
         prec.left(
@@ -1496,7 +1867,8 @@ module.exports = grammar({
             field("test_func", $.function_block),
           ),
         ),
-        // while (expr) { body }
+        // while (expr) { body }, and, where the test does all there is to
+        // do, while (expr)
         prec.left(
           1,
           seq(
@@ -1504,14 +1876,15 @@ module.exports = grammar({
             "(",
             field("expression", $._object),
             ")",
-            field("body_func", $.function_block),
+            optional(field("body_func", $.function_block)),
           ),
         ),
       ),
 
     for: $ =>
       choice(
-        // for(start, end, func) — start/end may be arbitrary expressions
+        // for(start, end, func) — start, end and the function may be
+        // arbitrary expressions
         seq(
           "for",
           "(",
@@ -1519,8 +1892,18 @@ module.exports = grammar({
           ",",
           $._object,
           ",",
-          $.function_block,
+          $._object,
           ")",
+        ),
+        // for(start, end) { func }
+        seq(
+          "for",
+          "(",
+          $._object,
+          ",",
+          $._object,
+          ")",
+          $.function_block,
         ),
         // for(start, end, step, func)
         seq(
@@ -1535,12 +1918,11 @@ module.exports = grammar({
           $.function_block,
           ")",
         ),
-        // NOTE: for(start, end) { func } trailing block form intentionally not supported
-        // due to grammar conflict with integer/number. Use for(start, end, { func }) instead.
         // start.for(end, func)
         seq(
           $.integer,
-          ".for",
+          ".",
+          "for",
           "(",
           $.integer,
           ",",
@@ -1550,7 +1932,8 @@ module.exports = grammar({
         // start.for(end, step, func)
         seq(
           $.integer,
-          ".for",
+          ".",
+          "for",
           "(",
           $.integer,
           ",",
@@ -1585,13 +1968,13 @@ module.exports = grammar({
           ",",
           $._object,
           ",",
-          $.function_block,
+          $._object,
           ")",
         ),
         // startValue.forBy ( endValue, stepValue, function );
         seq(
           $.integer,
-          field("name", ".forBy"),
+          field("name", seq(".", "forBy")),
           "(",
           $.integer,
           ",",
@@ -1604,9 +1987,20 @@ module.exports = grammar({
 
     case: $ =>
       prec.left(
-        seq(
-          field("name", "case"),
-          repeat($.function_block),
+        choice(
+          // case { test } { body } ...
+          seq(
+            field("name", "case"),
+            repeat($.function_block),
+          ),
+          // case({ test }, { body }, ...): the same, written as a call
+          seq(
+            field("name", "case"),
+            "(",
+            sepBy(",", $._object),
+            optional(","),
+            ")",
+          ),
         ),
       ),
 
@@ -1621,28 +2015,27 @@ module.exports = grammar({
         //        ...
         //        defaultFunc // optional
         //    );
+        //    A body or the default need not be a block (`$*, \CMETHOD`), and
+        //    a comma may follow the last of them.
         seq(
           field("name", "switch"),
           "(",
           field("selector", $._object),
-          ",",
-          field("test", $._object),
-          ",",
-          field("body", $.function_block),
           repeat(
             seq(
               ",",
               field("test", $._object),
               ",",
-              field("body", $.function_block),
+              field("body", $._object),
             ),
           ),
           optional(
             seq(
               ",",
-              field("default", $.function_block),
+              field("default", $._object),
             ),
           ),
+          optional(","),
           ")",
         ),
         // 2) Block-style switch (no commas):
@@ -1671,8 +2064,7 @@ module.exports = grammar({
           ),
         ),
       ),
-    pipe_token: $ => "|",
     // generator_arrow is defined in externals, handled by src/scanner.c
-    class_method_marker: $ => token("*"),
+    _operator: $ => OPERATOR,
   },
 });
